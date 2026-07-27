@@ -106,7 +106,7 @@ Route handler auth dipaksa `runtime = "nodejs"` dan `dynamic = "force-dynamic"`.
 
 ## Penyimpanan dan Migrasi
 
-MVP menyimpan key dokumen pada PostgreSQL dan isi berkas di `UPLOAD_DIR`. Direktori harus persisten, tidak dilayani sebagai static directory, dibatasi izin OS, dicadangkan bersama DB, dan dipindai sesuai kebijakan keamanan organisasi.
+MVP menyimpan key dokumen pada Turso/libSQL dan isi berkas di `UPLOAD_DIR`. Direktori harus persisten, tidak dilayani sebagai static directory, dibatasi izin OS, dicadangkan bersama DB, dan dipindai sesuai kebijakan keamanan organisasi.
 
 Migrasi menuju object storage:
 
@@ -128,11 +128,11 @@ Uji manual minimal: login tiap role, redirect role, akses silang role, token rus
 ## Keterbatasan MVP
 
 - Halaman operasional memakai service abstraction dan data mock. Selain autentikasi, form dan tombol operasional belum seluruhnya melakukan persistence ke PostgreSQL. Layanan domain pada `src/lib/workflow.ts` menjadi kontrak integrasi server action berikutnya.
-- Preview/unduh dokumen, ekspor PDF/Excel, QR/BAST final, notifikasi database, import barang, dan pengaturan persisten masih berupa presentasi prototipe.
+- Preview/unduh dokumen, ekspor PDF/Excel, QR/BAST final, import barang, dan pengaturan persisten masih berupa presentasi prototipe.
 - Migration awal Turso tersedia. Perubahan schema berikutnya tetap harus dibuat lokal, ditinjau, lalu diterapkan melalui script migration Turso.
 - Checkbox "ingat saya" belum mengubah durasi cookie; sesi tetap delapan jam.
 - Lupa kata sandi diarahkan ke helpdesk, belum ada reset token mandiri.
-- Pusat notifikasi menampilkan presentasi awal; baca/tandai dan pagination DB belum terhubung.
+- Pusat notifikasi membaca data per pengguna dari database; CTA menandai notifikasi sebagai terbaca. Pagination, tandai semua terbaca, dan trigger otomatis dari workflow/pengingat tenggat belum tersedia.
 - Profil memakai klaim sesi; perubahan profil di DB terlihat setelah login ulang.
 - Middleware memvalidasi token, bukan status akun terbaru di DB. Mutasi sensitif harus memakai `requireUser()` atau `requireRole()`.
 - Upload lokal tidak cocok untuk deployment serverless/replica tanpa shared persistent volume.
@@ -143,7 +143,7 @@ Uji manual minimal: login tiap role, redirect role, akses silang role, token rus
 1. Tambahkan rate limiting berbasis IP dan identifier serta audit login gagal.
 2. Hubungkan seluruh form ke server action yang memanggil `requireRole()`, Zod, workflow, storage, dan audit dalam transaksi.
 3. Integrasikan SSO pemerintah/MFA dan kebijakan reset kata sandi.
-4. Hubungkan notifikasi DB dengan read state dan deep link berizin.
+4. Buat trigger notifikasi dari workflow, pengingat H-3/H-1, pagination, dan tandai semua terbaca.
 5. Migrasikan storage ke object storage privat dan antivirus scanning.
 6. Tambahkan pengujian integrasi PostgreSQL, middleware, workflow, serta E2E lintas role.
 7. Tambahkan observability, backup/restore drill, dan prosedur rotasi `AUTH_SECRET`.
