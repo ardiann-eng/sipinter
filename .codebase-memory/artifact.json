@@ -1,0 +1,11 @@
+{
+    "schema_version": 2,
+    "commit": "",
+    "indexed_at": "2026-07-27T14:54:48Z",
+    "project": "SIPINTAR",
+    "nodes": 910,
+    "edges": 1968,
+    "original_size": 3080192,
+    "compressed_size": 582549,
+    "compression_level": 3
+}

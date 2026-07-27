@@ -1,0 +1,71 @@
+.page { background: var(--canvas); color: var(--ink); min-height: 100svh; padding: clamp(24px, 5vw, 64px) 20px; }
+.wrap { margin: 0 auto; max-width: 920px; }
+.top { align-items: flex-start; display: flex; gap: 20px; justify-content: space-between; margin-bottom: 24px; }
+.eyebrow { color: var(--maroon); font-size: 10px; font-weight: 800; letter-spacing: .12em; margin: 0 0 5px; }
+.top h1 { color: var(--primary-deep); font-size: clamp(27px, 4vw, 38px); letter-spacing: -.02em; margin: 0 0 5px; }
+.top p { color: var(--muted); margin: 0; }
+.back { background: var(--surface); border: 1px solid var(--line-strong); border-radius: 8px; color: var(--primary); font-size: 12px; font-weight: 700; padding: 9px 13px; }
+.back:hover { background: var(--surface-soft); border-color: var(--primary); }
+.summary { align-items: center; background: var(--blue-700); border-radius: 12px; color: var(--surface); display: flex; gap: 16px; justify-content: space-between; margin-bottom: 20px; padding: 16px 20px; }
+.summary > div { align-items: center; display: flex; gap: 11px; }
+.summary > div > svg { color: var(--maroon-100); }
+.summary strong, .summary small { display: block; }
+.summary strong { font-size: 14px; }
+.summary small { color: rgb(255 255 255 / 72%); font-size: 11px; margin-top: 2px; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); overflow: hidden; }
+.groups { display: grid; gap: 18px; }
+.panelHead { align-items: center; border-bottom: 1px solid var(--line); display: flex; gap: 16px; justify-content: space-between; padding: 18px 20px; }
+.panelHead h2 { color: var(--primary-deep); font-size: 15px; margin: 0; }
+.panelHead p { color: var(--muted); font-size: 11px; margin: 3px 0 0; }
+.count { background: var(--primary-soft); border-radius: 999px; color: var(--primary); font-size: 11px; font-weight: 750; padding: 3px 8px; }
+.summary .count { background: rgb(255 255 255 / 14%); color: var(--surface); }
+.groupCount { border-radius: 999px; font-size: 11px; font-variant-numeric: tabular-nums; font-weight: 750; min-width: 24px; padding: 3px 8px; text-align: center; }
+.groupCountACTION { background: var(--maroon-50); color: var(--maroon-700); }
+.groupCountWAITING { background: var(--blue-50); color: var(--blue-700); }
+.groupCountINFO { background: var(--canvas-subtle); color: var(--text-secondary); }
+.list { list-style: none; margin: 0; padding: 0; }
+.item { border-bottom: 1px solid var(--line); display: grid; gap: 14px; grid-template-columns: 42px 1fr auto; padding: 18px 20px; }
+.item:last-child { border: 0; }
+.itemUnread { background: var(--surface-soft); border-left: 3px solid var(--primary); padding-left: 17px; }
+.icon { background: var(--primary-soft); border-radius: 10px; color: var(--primary); display: grid; height: 38px; place-items: center; width: 38px; }
+.iconACTION { background: var(--maroon-50); color: var(--maroon-600); }
+.iconWAITING { background: var(--blue-50); color: var(--blue-600); }
+.iconINFO { background: var(--canvas-subtle); color: var(--text-secondary); }
+.itemBody { min-width: 0; }
+.item h3 { color: var(--ink); font-size: 13px; margin: 0 0 4px; }
+.item p { color: var(--muted); font-size: 12px; margin: 0; }
+.item time { color: var(--muted); font-size: 10px; white-space: nowrap; }
+.action { align-items: center; color: var(--primary); display: inline-flex; font-size: 12px; font-weight: 750; gap: 2px; margin-top: 9px; }
+.action:hover { color: var(--primary-deep); text-decoration: underline; }
+.profile { display: grid; grid-template-columns: 220px 1fr; }
+.identity { background: var(--primary-deep); color: var(--surface); padding: 28px; }
+.avatar { background: var(--surface); border-radius: 12px; color: var(--primary-deep); display: grid; font-size: 24px; font-weight: 650; height: 66px; margin-bottom: 18px; place-items: center; width: 66px; }
+.identity h2 { font-size: 17px; margin: 0 0 4px; }
+.identity p { color: color-mix(in srgb, var(--surface) 70%, var(--primary-deep)); font-size: 11px; margin: 0; overflow-wrap: anywhere; }
+.details { padding: 28px; }
+.details dl { display: grid; gap: 22px; grid-template-columns: 1fr 1fr; margin: 0 0 28px; }
+.details dt { color: var(--muted); font-size: 10px; letter-spacing: .06em; margin-bottom: 4px; text-transform: uppercase; }
+.details dd { color: var(--ink); font-weight: 650; margin: 0; overflow-wrap: anywhere; }
+.logout { background: var(--surface); border: 1px solid var(--danger); border-radius: 8px; color: var(--danger); font-weight: 750; padding: 9px 15px; }
+.state { background: var(--canvas); display: grid; min-height: 100svh; padding: 20px; place-items: center; }
+.stateCard { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; border-top: 4px solid var(--maroon); box-shadow: var(--shadow); max-width: 520px; padding: clamp(30px, 6vw, 55px); text-align: center; }
+.stateIcon { background: var(--danger-soft); border-radius: 50%; color: var(--danger); display: grid; height: 64px; margin: 0 auto 20px; place-items: center; width: 64px; }
+.stateCard h1 { color: var(--primary-deep); font-size: 30px; letter-spacing: -.02em; margin-bottom: 10px; }
+.stateCard p { color: var(--muted); margin-bottom: 25px; }
+.primary { background: var(--primary); border-radius: 8px; color: var(--surface); display: inline-block; font-weight: 750; padding: 11px 17px; }
+.primary:hover { background: var(--primary-deep); }
+.secondary { border: 1px solid var(--line-strong); border-radius: 8px; color: var(--primary); display: inline-block; font-weight: 750; margin-left: 8px; padding: 10px 17px; }
+.secondary:hover { background: var(--surface-soft); border-color: var(--primary); }
+@media (max-width: 640px) {
+  .page { padding: 24px 14px; }
+  .top { display: block; }
+  .back { display: inline-block; margin-top: 15px; }
+  .summary { align-items: flex-start; flex-direction: column; gap: 10px; padding: 15px; }
+  .item { grid-template-columns: 38px 1fr; padding: 15px; }
+  .itemUnread { padding-left: 12px; }
+  .item time { grid-column: 2; }
+  .profile { grid-template-columns: 1fr; }
+  .identity, .details { padding: 22px; }
+  .details dl { gap: 17px; grid-template-columns: 1fr; }
+  .secondary { display: block; margin: 9px 0 0; }
+}

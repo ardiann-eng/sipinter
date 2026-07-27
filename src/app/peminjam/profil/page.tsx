@@ -1,0 +1,7 @@
+import { Badge, Button, DetailGrid, DetailItem, Input, PageHeader, Panel } from "@/components";
+import { borrower } from "@/components/borrower/borrower-data";
+import styles from "@/components/borrower/borrower.module.css";
+
+export default function ProfilePage() {
+  return <div className={styles.page}><PageHeader eyebrow="Akun peminjam" title="Profil" description="Identitas pegawai bersumber dari data kepegawaian. Hubungi administrator bila terdapat kekeliruan." /><div className={styles.grid}><Panel className={styles.span5}><div className={styles.profileHead}><div className={styles.avatar}>AH</div><div><h2>{borrower.name}</h2><p>{borrower.unit}</p><Badge tone="success" dot>Akun aktif</Badge></div></div></Panel><Panel className={styles.span7} title="Identitas pegawai"><DetailGrid><DetailItem label="Nama lengkap">{borrower.name}</DetailItem><DetailItem label="NIP">{borrower.nip}</DetailItem><DetailItem label="ID pegawai">{borrower.employeeId}</DetailItem><DetailItem label="Perangkat daerah">{borrower.skpd}</DetailItem><DetailItem label="Unit kerja" wide>{borrower.unit}</DetailItem></DetailGrid></Panel><Panel className={styles.span12} title="Kontak" description="Kontak dipakai untuk pemberitahuan status dan pengingat pengembalian."><div className={styles.formGrid}><Input label="Email kedinasan" defaultValue={borrower.email} disabled /><Input label="Nomor telepon" defaultValue={borrower.phone} /><div className={styles.wide}><Button>Simpan nomor telepon</Button></div></div></Panel></div></div>;
+}

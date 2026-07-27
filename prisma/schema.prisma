@@ -1,0 +1,368 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  BORROWER
+  APPROVER
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum ItemStatus {
+  AVAILABLE
+  OUT_OF_STOCK
+  INACTIVE
+}
+
+enum BorrowingStatus {
+  DRAFT
+  WAITING_ADMIN_VERIFICATION
+  REVISION_REQUIRED
+  WAITING_SEKDA_APPROVAL
+  APPROVED
+  REJECTED
+  READY_FOR_HANDOVER
+  BORROWED
+  WAITING_RETURN
+  WAITING_RETURN_VERIFICATION
+  RETURN_PROBLEM
+  COMPLETED
+  CANCELLED
+  OVERDUE
+}
+
+enum ApprovalDecision {
+  APPROVED
+  REJECTED
+}
+
+enum ItemCondition {
+  GOOD
+  LIGHTLY_DAMAGED
+  HEAVILY_DAMAGED
+  LOST
+}
+
+enum CompletenessStatus {
+  COMPLETE
+  INCOMPLETE
+}
+
+enum ReturnSubmissionStatus {
+  DRAFT
+  SUBMITTED
+  VERIFIED
+  PROBLEM
+}
+
+enum ReturnVerificationResult {
+  ACCEPTED
+  PROBLEM
+}
+
+enum ReturnIssueType {
+  INCOMPLETE
+  DAMAGED
+  NOT_FUNCTIONING
+  LOST
+  OTHER
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  LOGIN
+  LOGOUT
+  TRANSITION
+  OVERDUE_MARKED
+}
+
+enum NotificationType {
+  INFO
+  ACTION_REQUIRED
+  WARNING
+  WAITING
+}
+
+model SKPD {
+  id        String   @id @default(cuid())
+  code      String   @unique
+  name      String
+  address   String?
+  phone     String?
+  email     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users             User[]
+  items             Item[]
+  borrowingRequests BorrowingRequest[]
+  auditLogs         AuditLog[]
+}
+
+model User {
+  id           String     @id @default(cuid())
+  name         String
+  nip          String     @unique
+  email        String     @unique
+  phone        String?
+  nikHash      String?    @unique
+  rankGroup    String?
+  position     String
+  skpdId       String
+  role         Role       @default(BORROWER)
+  status       UserStatus @default(ACTIVE)
+  passwordHash String
+  lastLoginAt  DateTime?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  skpd                SKPD                 @relation(fields: [skpdId], references: [id], onDelete: Restrict)
+  borrowingRequests   BorrowingRequest[]   @relation("BorrowerRequests")
+  approvalRecords     ApprovalRecord[]
+  handoverRecords     HandoverRecord[]
+  returnSubmissions   ReturnSubmission[]
+  returnVerifications ReturnVerification[]
+  auditLogs           AuditLog[]
+  notifications       Notification[]
+
+  @@index([skpdId, role, status])
+}
+
+model ItemCategory {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  items Item[]
+}
+
+model Item {
+  id                String        @id @default(cuid())
+  itemCode          String        @unique
+  name              String
+  categoryId        String
+  location          String
+  skpdId            String
+  unit              String
+  totalQuantity     Int
+  availableQuantity Int
+  condition         ItemCondition
+  status            ItemStatus    @default(AVAILABLE)
+  procurementYear   Int
+  description       String?
+  mainPhoto         String?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  category     ItemCategory           @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  skpd         SKPD                   @relation(fields: [skpdId], references: [id], onDelete: Restrict)
+  requestItems BorrowingRequestItem[]
+
+  @@index([categoryId])
+  @@index([skpdId, status])
+}
+
+model BorrowingRequest {
+  id                 String          @id @default(cuid())
+  registrationNumber String          @unique
+  borrowerId         String
+  skpdId             String
+  purpose            String
+  activityLocation   String
+  borrowDate         DateTime
+  plannedReturnDate  DateTime
+  status             BorrowingStatus @default(DRAFT)
+  ktpFile            String?
+  approvalLetterFile String?
+  adminNote          String?
+  approverNote       String?
+  submittedAt        DateTime?
+  verifiedAt         DateTime?
+  approvedAt         DateTime?
+  rejectedAt         DateTime?
+  handedOverAt       DateTime?
+  returnedAt         DateTime?
+  completedAt        DateTime?
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+
+  borrower           User                   @relation("BorrowerRequests", fields: [borrowerId], references: [id], onDelete: Restrict)
+  skpd               SKPD                   @relation(fields: [skpdId], references: [id], onDelete: Restrict)
+  items              BorrowingRequestItem[]
+  approvalRecords    ApprovalRecord[]
+  handoverRecord     HandoverRecord?
+  returnSubmissions  ReturnSubmission[]
+  returnVerification ReturnVerification?
+
+  @@index([borrowerId, status])
+  @@index([skpdId, status])
+  @@index([status, plannedReturnDate])
+}
+
+model BorrowingRequestItem {
+  id                 String        @id @default(cuid())
+  borrowingRequestId String
+  itemId             String
+  quantity           Int
+  initialCondition   ItemCondition
+  handoverPhoto      String?
+
+  borrowingRequest BorrowingRequest @relation(fields: [borrowingRequestId], references: [id], onDelete: Cascade)
+  item             Item             @relation(fields: [itemId], references: [id], onDelete: Restrict)
+
+  @@unique([borrowingRequestId, itemId])
+  @@index([itemId])
+}
+
+model ApprovalRecord {
+  id                 String           @id @default(cuid())
+  borrowingRequestId String
+  approverId         String
+  decision           ApprovalDecision
+  note               String?
+  decidedAt          DateTime         @default(now())
+  createdAt          DateTime         @default(now())
+
+  borrowingRequest BorrowingRequest @relation(fields: [borrowingRequestId], references: [id], onDelete: Cascade)
+  approver         User             @relation(fields: [approverId], references: [id], onDelete: Restrict)
+
+  @@index([borrowingRequestId, decidedAt])
+  @@index([approverId])
+}
+
+model HandoverRecord {
+  id                 String   @id @default(cuid())
+  borrowingRequestId String   @unique
+  adminId            String
+  recipientName      String
+  recipientIdentity  String
+  handoverAt         DateTime
+  notes              String?
+  proofFile          String?
+  createdAt          DateTime @default(now())
+
+  borrowingRequest BorrowingRequest @relation(fields: [borrowingRequestId], references: [id], onDelete: Restrict)
+  admin            User             @relation(fields: [adminId], references: [id], onDelete: Restrict)
+
+  @@index([adminId])
+}
+
+model ReturnSubmission {
+  id                 String                 @id @default(cuid())
+  borrowingRequestId String
+  submittedById      String
+  actualReturnDate   DateTime
+  submittedCondition ItemCondition
+  completenessStatus CompletenessStatus
+  notes              String?
+  status             ReturnSubmissionStatus @default(DRAFT)
+  submittedAt        DateTime?
+  verifiedAt         DateTime?
+  createdAt          DateTime               @default(now())
+  updatedAt          DateTime               @updatedAt
+
+  borrowingRequest BorrowingRequest @relation(fields: [borrowingRequestId], references: [id], onDelete: Cascade)
+  submittedBy      User             @relation(fields: [submittedById], references: [id], onDelete: Restrict)
+  photos           ReturnPhoto[]
+
+  @@index([borrowingRequestId, submittedAt])
+  @@index([submittedById])
+}
+
+model ReturnPhoto {
+  id                 String   @id @default(cuid())
+  returnSubmissionId String
+  fileUrl            String
+  photoType          String
+  description        String?
+  storageKey         String?  @unique
+  originalName       String?
+  mimeType           String?
+  size               Int?
+  createdAt          DateTime @default(now())
+
+  returnSubmission ReturnSubmission @relation(fields: [returnSubmissionId], references: [id], onDelete: Cascade)
+
+  @@index([returnSubmissionId])
+}
+
+model ReturnVerification {
+  id                     String                   @id @default(cuid())
+  borrowingRequestId     String                   @unique
+  verifierId             String
+  itemComplete           Boolean
+  accessoriesComplete    Boolean
+  physicallyIntact       Boolean
+  functioningProperly    Boolean
+  result                 ReturnVerificationResult
+  issueType              ReturnIssueType?
+  issueDescription       String?
+  followUpRecommendation String?
+  verifiedAt             DateTime                 @default(now())
+  createdAt              DateTime                 @default(now())
+  updatedAt              DateTime                 @updatedAt
+
+  borrowingRequest BorrowingRequest @relation(fields: [borrowingRequestId], references: [id], onDelete: Restrict)
+  verifier         User             @relation(fields: [verifierId], references: [id], onDelete: Restrict)
+
+  @@index([verifierId])
+}
+
+model AuditLog {
+  id            String      @id @default(cuid())
+  skpdId        String
+  userId        String?
+  action        AuditAction
+  module        String
+  objectType    String
+  objectId      String?
+  previousValue Json?
+  newValue      Json?
+  ipAddress     String?
+  userAgent     String?
+  createdAt     DateTime    @default(now())
+
+  skpd SKPD  @relation(fields: [skpdId], references: [id], onDelete: Restrict)
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([skpdId, createdAt])
+  @@index([objectType, objectId])
+  @@index([userId])
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType @default(INFO)
+  title     String
+  message   String
+  link      String?
+  readAt    DateTime?
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt])
+  @@index([userId, createdAt])
+}
+
+model Setting {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt
+}

@@ -1,0 +1,433 @@
+.page {
+  background: var(--surface);
+  color: var(--ink);
+  display: grid;
+  grid-template-columns: minmax(480px, 56%) minmax(420px, 44%);
+  min-height: 100svh;
+}
+.identity {
+  color: var(--surface);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 100svh;
+  overflow: hidden;
+  padding: clamp(38px, 5vw, 76px);
+  position: relative;
+}
+.background {
+  object-fit: cover;
+  object-position: center;
+}
+.overlay {
+  background: var(--identity-gradient);
+  inset: 0;
+  opacity: 0.94;
+  position: absolute;
+}
+.identityTop,
+.identityBody,
+.identityFoot {
+  position: relative;
+  z-index: 1;
+}
+.identityTop {
+  align-items: center;
+  display: flex;
+  font-size: 13px;
+  font-weight: 750;
+  gap: 17px;
+  letter-spacing: 0.08em;
+}
+.identityTop small {
+  color: color-mix(in srgb, var(--surface) 70%, var(--primary-deep));
+  display: block;
+  font-size: 10px;
+  font-weight: 550;
+  margin-top: 3px;
+}
+.logo,
+.mobileLogo {
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid color-mix(in srgb, var(--surface) 65%, var(--primary-deep));
+  border-radius: 9px;
+  display: grid;
+  flex: 0 0 auto;
+  gap: 6px;
+  grid-template-columns: 34px 54px;
+  height: 72px;
+  justify-content: center;
+  overflow: hidden;
+  padding: 6px;
+  width: 126px;
+}
+.cityLogo,
+.anniversaryLogo {
+  display: block;
+  height: 100%;
+  min-width: 0;
+  overflow: hidden;
+  width: 100%;
+}
+.cityLogo img,
+.anniversaryLogo img {
+  display: block;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  width: 100%;
+}
+.identityBody {
+  margin: auto 0;
+  max-width: 660px;
+  padding: clamp(58px, 10vh, 112px) 0;
+}
+.kicker {
+  color: var(--maroon-100);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.17em;
+  margin-bottom: 22px;
+}
+.identityBody h1 {
+  font-size: clamp(68px, 8vw, 112px);
+  font-weight: 750;
+  letter-spacing: -0.055em;
+  line-height: 0.82;
+  margin: 0;
+  text-shadow: 0 4px 26px rgb(0 0 0 / 16%);
+}
+.fullName {
+  color: color-mix(in srgb, var(--surface) 92%, var(--primary-deep));
+  font-size: clamp(24px, 2.4vw, 34px);
+  font-weight: 500;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+  margin: 34px 0 0;
+  max-width: 570px;
+}
+.statement {
+  color: color-mix(in srgb, var(--surface) 82%, var(--primary-deep));
+  font-size: 16px;
+  line-height: 1.55;
+  margin: 28px 0 0;
+  max-width: 450px;
+}
+.identityFoot {
+  color: color-mix(in srgb, var(--surface) 60%, var(--primary-deep));
+  font-size: 11px;
+  letter-spacing: 0.04em;
+}
+.access {
+  align-items: center;
+  background: var(--identity-gradient-soft);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 100svh;
+  padding: 54px clamp(40px, 6vw, 96px) 26px;
+}
+.card {
+  background: rgb(255 255 255 / 88%);
+  border: 1px solid rgb(23 33 43 / 8%);
+  border-radius: 16px;
+  box-shadow: 0 18px 45px rgb(10 49 86 / 8%);
+  padding: clamp(28px, 3vw, 40px);
+  width: min(100%, 510px);
+}
+.mobileBrand {
+  display: none;
+}
+.heading {
+  padding-top: 2px;
+}
+.heading h2 {
+  color: var(--primary-deep);
+  font-size: clamp(30px, 3vw, 36px);
+  font-weight: 650;
+  letter-spacing: -0.035em;
+  line-height: 1;
+  margin: 0;
+}
+.heading h2 strong {
+  color: var(--maroon-500);
+  font-weight: 750;
+}
+.intro {
+  color: var(--muted);
+  margin: 22px 0 30px;
+}
+.form {
+  display: grid;
+  gap: 19px;
+}
+.form label {
+  display: grid;
+  gap: 7px;
+}
+.form label > span {
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 700;
+}
+.form input[type="text"],
+.form input[type="password"] {
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  height: 44px;
+  outline: 0;
+  padding: 9px 12px;
+  width: 100%;
+}
+.form input:focus {
+  border-color: var(--focus);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 14%, transparent);
+}
+.password {
+  position: relative;
+}
+.password input {
+  padding-right: 48px !important;
+}
+.password button {
+  background: transparent;
+  border: 0;
+  color: var(--muted);
+  display: grid;
+  height: 38px;
+  place-items: center;
+  position: absolute;
+  right: 3px;
+  top: 3px;
+  width: 42px;
+}
+.options {
+  align-items: center;
+  display: flex;
+  font-size: 12px;
+  gap: 14px;
+  justify-content: space-between;
+}
+.check {
+  align-items: center;
+  display: flex !important;
+  gap: 8px !important;
+  grid-template-columns: 16px 1fr;
+}
+.check input {
+  accent-color: var(--primary);
+  height: 15px;
+  width: 15px;
+}
+.check span {
+  font-weight: 500 !important;
+}
+.options a {
+  color: var(--primary);
+  font-weight: 700;
+}
+.submit {
+  align-items: center;
+  background: var(--primary);
+  border: 0;
+  border-radius: 8px;
+  color: var(--surface);
+  display: flex;
+  font-weight: 750;
+  gap: 9px;
+  height: 46px;
+  justify-content: center;
+}
+.submit:hover {
+  background: var(--primary-deep);
+}
+.submit:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+.error {
+  background: var(--danger-soft);
+  border: 1px solid color-mix(in srgb, var(--danger) 22%, transparent);
+  border-radius: 8px;
+  color: var(--danger);
+  font-size: 12px;
+  padding: 10px 12px;
+}
+.notice {
+  background: var(--success-surface);
+  border: 1px solid color-mix(in srgb, var(--success) 22%, transparent);
+  border-radius: 8px;
+  color: var(--success);
+  font-size: 12px;
+  line-height: 1.45;
+  margin: -8px 0 20px;
+  padding: 10px 12px;
+}
+.notice strong {
+  font-family: ui-monospace, monospace;
+}
+.spin {
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.help {
+  align-items: center;
+  background: var(--surface-soft);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--primary);
+  display: flex;
+  gap: 12px;
+  margin-top: 30px;
+  padding: 15px;
+}
+.register {
+  align-items: center;
+  background: var(--blue-50);
+  border: 1px solid var(--blue-100);
+  border-radius: 8px;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 35px 1fr auto;
+  margin-top: 22px;
+  padding: 12px;
+}
+.registerIcon {
+  align-items: center;
+  background: white;
+  border-radius: 7px;
+  color: var(--blue-600);
+  display: flex;
+  flex: 0 0 35px;
+  height: 35px;
+  justify-content: center;
+  overflow: hidden;
+  width: 35px;
+}
+.registerIcon svg {
+  display: block;
+}
+.register strong,
+.register div > span {
+  display: block;
+}
+.register strong {
+  color: var(--blue-700);
+  font-size: 12px;
+}
+.register div > span {
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.35;
+  margin-top: 2px;
+}
+.register a {
+  color: var(--blue-600);
+  font-size: 12px;
+  font-weight: 750;
+}
+.help strong,
+.help span {
+  display: block;
+}
+.help strong {
+  color: var(--ink);
+  font-size: 12px;
+}
+.help span {
+  color: var(--muted);
+  font-size: 11px;
+  margin-top: 2px;
+}
+.security {
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.5;
+  margin: 17px auto 0;
+  max-width: 390px;
+  text-align: center;
+}
+.access footer {
+  color: var(--muted);
+  font-size: 10px;
+  margin-top: 30px;
+}
+.access footer span {
+  padding: 0 7px;
+}
+@media (max-width: 760px) {
+  .page {
+    background: var(--surface);
+    display: block;
+  }
+  .identity {
+    display: none;
+  }
+  .access {
+    justify-content: flex-start;
+    min-height: 100svh;
+    padding: 24px 20px 16px;
+  }
+  .card {
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0;
+  }
+  .card {
+    max-width: 430px;
+  }
+  .mobileBrand {
+    align-items: center;
+    border-bottom: 1px solid var(--line);
+    color: var(--primary-deep);
+    display: flex;
+    gap: 12px;
+    margin-bottom: 27px;
+    padding-bottom: 20px;
+  }
+  .mobileBrand strong,
+  .mobileBrand span {
+    display: block;
+  }
+  .mobileBrand strong {
+    font-size: 24px;
+    letter-spacing: 0.06em;
+  }
+  .mobileBrand span {
+    color: var(--muted);
+    font-size: 10px;
+  }
+  .mobileLogo {
+    border-color: var(--line-strong);
+    gap: 4px;
+    grid-template-columns: 26px 43px;
+    height: 54px;
+    padding: 5px;
+    width: 96px;
+  }
+  .heading h2 {
+    font-size: 26px;
+  }
+  .intro {
+    margin-bottom: 21px;
+  }
+  .form {
+    gap: 16px;
+  }
+  .options {
+    align-items: flex-start;
+  }
+  .access footer {
+    margin-top: auto;
+    padding-top: 24px;
+    text-align: center;
+  }
+}
