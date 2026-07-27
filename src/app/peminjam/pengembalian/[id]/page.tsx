@@ -1,79 +1,17 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import {
-  Badge,
-  DetailGrid,
-  DetailItem,
-  NotFoundState,
-  PageHeader,
-  Panel,
-} from "@/components";
-import { findBorrowerRequest } from "@/components/borrower/borrower-data";
-import { ReturnForm } from "@/components/borrower/return-form";
+import { Badge, DetailGrid, DetailItem, NotFoundState, PageHeader, Panel } from "@/components";
+import { requireRole } from "@/lib/auth";
+import { db } from "@/lib/db";
 import { formatDate } from "@/lib/format";
+import { Role } from "@prisma/client";
+import { ReturnForm } from "@/components/borrower/return-form";
 import styles from "@/components/borrower/borrower.module.css";
 
-export default async function ReturnDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default async function ReturnDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const user = await requireRole([Role.BORROWER]);
   const { id } = await params;
-  const request = findBorrowerRequest(id);
-  if (
-    !request ||
-    !["BORROWED", "WAITING_RETURN", "OVERDUE", "RETURN_PROBLEM"].includes(
-      request.status,
-    )
-  )
-    return (
-      <div className={styles.page}>
-        <Link
-          className={`${styles.linkButton} ${styles.linkGhost}`}
-          href="/peminjam/pengembalian"
-        >
-          <ArrowLeft size={16} /> Kembali
-        </Link>
-        <NotFoundState description="Peminjaman tidak ditemukan atau belum dapat dikembalikan." />
-      </div>
-    );
-  return (
-    <div className={styles.page}>
-      <PageHeader
-        eyebrow="Pengajuan pengembalian"
-        title={request.number}
-        description="Dokumentasikan kondisi aktual seluruh barang sebelum dikirim."
-        actions={
-          <Link
-            className={`${styles.linkButton} ${styles.linkOutline}`}
-            href="/peminjam/pengembalian"
-          >
-            <ArrowLeft size={16} /> Kembali
-          </Link>
-        }
-      />
-      <Panel title="Ringkasan peminjaman">
-        <DetailGrid>
-          <DetailItem label="Keperluan" wide>
-            {request.purpose}
-          </DetailItem>
-          <DetailItem label="Periode">
-            {formatDate(request.startDate)} - {formatDate(request.endDate)}
-          </DetailItem>
-          <DetailItem label="Lokasi">{request.location}</DetailItem>
-          <DetailItem label="Barang" wide>
-            <div className={styles.itemRows}>
-              {request.items.map((item) => (
-                <div className={styles.itemRow} key={item.itemId}>
-                  <strong>{item.itemName}</strong>
-                  <Badge tone="info">{item.quantity} unit</Badge>
-                </div>
-              ))}
-            </div>
-          </DetailItem>
-        </DetailGrid>
-      </Panel>
-      <ReturnForm request={request} />
-    </div>
-  );
+  const request = await db.borrowingRequest.findFirst({ where: { id, borrowerId: user.id, status: { in: ["BORROWED", "WAITING_RETURN", "OVERDUE", "RETURN_PROBLEM"] } }, include: { items: { include: { item: true } } } });
+  if (!request) return <div className={styles.page}><Link className={`${styles.linkButton} ${styles.linkGhost}`} href="/peminjam/pengembalian"><ArrowLeft size={16} /> Kembali</Link><NotFoundState description="Peminjaman tidak ditemukan atau belum dapat dikembalikan." /></div>;
+  return <div className={styles.page}><PageHeader eyebrow="Pengajuan pengembalian" title={request.registrationNumber} description="Dokumentasikan kondisi aktual seluruh barang sebelum dikirim." actions={<Link className={`${styles.linkButton} ${styles.linkOutline}`} href="/peminjam/pengembalian"><ArrowLeft size={16} /> Kembali</Link>} /><Panel title="Ringkasan peminjaman"><DetailGrid><DetailItem label="Keperluan" wide>{request.purpose}</DetailItem><DetailItem label="Periode">{formatDate(request.borrowDate)} - {formatDate(request.plannedReturnDate)}</DetailItem><DetailItem label="Lokasi">{request.activityLocation}</DetailItem><DetailItem label="Barang" wide><div className={styles.itemRows}>{request.items.map((entry) => <div className={styles.itemRow} key={entry.id}><strong>{entry.item.name}</strong><Badge tone="info">{entry.quantity} {entry.item.unit}</Badge></div>)}</div></DetailItem></DetailGrid></Panel><ReturnForm requestId={request.id} number={request.registrationNumber} itemCount={request.items.length} /></div>;
 }

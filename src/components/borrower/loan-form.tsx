@@ -44,7 +44,16 @@ const steps = [
 const allowedDocumentTypes = ["application/pdf", "image/jpeg", "image/png"];
 const maxFileSize = 5 * 1024 * 1024;
 
-export function LoanForm() {
+type BorrowerProfile = typeof borrower;
+type CatalogItem = (typeof availableItems)[number];
+
+export function LoanForm({
+  borrower: profile,
+  items: catalog,
+}: {
+  borrower: BorrowerProfile;
+  items: CatalogItem[];
+}) {
   const [step, setStep] = useState(0);
   const [draft, setDraft] = useState<Draft>(initialDraft);
   const [ktp, setKtp] = useState<File | null>(null);
@@ -129,7 +138,7 @@ export function LoanForm() {
     window.localStorage.removeItem("sipinter-borrower-draft");
     setMessage("Pengajuan berhasil dikirim untuk verifikasi administrasi.");
   }
-  const selected = availableItems.filter(
+  const selected = catalog.filter(
     (item) => (draft.items[item.id] ?? 0) > 0,
   );
   const selectedQuantity = selected.reduce(
@@ -192,12 +201,12 @@ export function LoanForm() {
           )}
           {step === 0 && (
             <div className={styles.formGrid}>
-              <Input label="Nama lengkap" value={borrower.name} disabled />
-              <Input label="NIP" value={borrower.nip} disabled />
-              <Input label="Perangkat daerah" value={borrower.skpd} disabled />
-              <Input label="Unit kerja" value={borrower.unit} disabled />
-              <Input label="Email kedinasan" value={borrower.email} disabled />
-              <Input label="Nomor telepon" value={borrower.phone} disabled />
+              <Input label="Nama lengkap" value={profile.name} disabled />
+              <Input label="NIP" value={profile.nip} disabled />
+              <Input label="Perangkat daerah" value={profile.skpd} disabled />
+              <Input label="Unit kerja" value={profile.unit} disabled />
+              <Input label="Email kedinasan" value={profile.email} disabled />
+              <Input label="Nomor telepon" value={profile.phone} disabled />
             </div>
           )}
           {step === 1 && (
@@ -345,7 +354,7 @@ export function LoanForm() {
                 <div>
                   <span>Peminjam</span>
                   <strong>
-                    {borrower.name} · {borrower.nip}
+                    {profile.name} · {profile.nip}
                   </strong>
                 </div>
                 <div>

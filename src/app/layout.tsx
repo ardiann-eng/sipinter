@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Public_Sans, Source_Serif_4 } from "next/font/google";
+import cityLogo from "../../logo-makassarkota-239x300.png";
 import "./globals.css";
 
 const publicSans = Public_Sans({
@@ -22,6 +23,9 @@ export const metadata: Metadata = {
   },
   description:
     "Sistem Informasi Peminjaman Inventaris Kantor Terintegrasi Pemerintah Kota Makassar",
+  icons: {
+    icon: [{ url: cityLogo.src, type: "image/png" }],
+  },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

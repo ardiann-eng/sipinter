@@ -1,12 +1,14 @@
 "use client";
 
 import { useId, useState } from "react";
+import { useRouter } from "next/navigation";
 import { AlertTriangle, CheckCircle2, Gavel, ShieldAlert, XCircle } from "lucide-react";
 import { Badge, Button, Modal } from "@/components";
 
 type Decision = "approve" | "reject" | null;
 
-export function DecisionPanel({ disabled = false }: { disabled?: boolean }) {
+export function DecisionPanel({ requestId, disabled = false }: { requestId: string; disabled?: boolean }) {
+  const router = useRouter();
   const reasonHelpId = useId();
   const reasonErrorId = useId();
   const [decision, setDecision] = useState<Decision>(null);
@@ -14,13 +16,21 @@ export function DecisionPanel({ disabled = false }: { disabled?: boolean }) {
   const [error, setError] = useState("");
   const [completed, setCompleted] = useState<Decision>(null);
 
-  function submit() {
+  async function submit() {
     if (decision === "reject" && reason.trim().length < 20) {
       setError("Alasan penolakan wajib diisi minimal 20 karakter.");
       return;
     }
-    setCompleted(decision);
-    setDecision(null);
+    try {
+      const response = await fetch(`/api/borrowing-requests/${requestId}/transition`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action: decision === "approve" ? "APPROVE" : "REJECT", note: reason }) });
+      const result = await response.json() as { error?: string };
+      if (!response.ok) throw new Error(result.error ?? "Keputusan belum dapat dicatat.");
+      setCompleted(decision);
+      setDecision(null);
+      router.refresh();
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Keputusan belum dapat dicatat.");
+    }
   }
 
   if (disabled) return <aside className="decision-panel decision-panel--closed"><Badge tone="neutral">Permohonan telah diputuskan</Badge><h2>Keputusan bersifat final</h2><p>Catatan keputusan tersedia pada riwayat persetujuan dan audit sistem.</p></aside>;

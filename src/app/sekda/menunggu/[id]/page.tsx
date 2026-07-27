@@ -1,12 +1,18 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Boxes, CheckCircle2, FileCheck2, UserRound } from "lucide-react";
-import { DecisionPanel, findApproval } from "@/components/approver";
+import { DecisionPanel } from "@/components/approver";
 import { Badge, DetailGrid, DetailItem, DocumentPlaceholder, Panel, Timeline } from "@/components";
+import { requireRole } from "@/lib/auth";
+import { db } from "@/lib/db";
+import { toApprovalView } from "@/lib/approval-view";
+import { Role } from "@prisma/client";
 
 export default async function ApprovalDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const record = findApproval(id);
+  await requireRole([Role.APPROVER]);
+  const request = await db.borrowingRequest.findUnique({ where: { id }, include: { borrower: { include: { skpd: true } }, items: { include: { item: true } }, approvalRecords: true } });
+  const record = request ? toApprovalView(request) : null;
   if (!record) notFound();
   const pending = record.status === "MENUNGGU";
 
@@ -30,7 +36,7 @@ export default async function ApprovalDetailPage({ params }: { params: Promise<{
           { id: "3", title: pending ? "Menunggu keputusan Sekretaris Daerah" : `Permohonan ${record.status === "DISETUJUI" ? "disetujui" : "ditolak"}`, description: pending ? "Permohonan berada pada meja persetujuan Sekretaris Daerah." : record.decisionNote, timestamp: record.decidedAt ?? "Saat ini", state: pending ? "current" : "complete" },
         ]} /></Panel>
       </div>
-      <div className="approval-detail-side"><DecisionPanel disabled={!pending} />{!pending && <Panel title="Catatan keputusan"><p className="decision-note">{record.decisionNote}</p><small>{record.decidedAt}</small></Panel>}<aside className="policy-note"><strong>Dasar penelaahan</strong><p>Penggunaan fasilitas wajib mendukung tugas kedinasan, tersedia pada jadwal dimohonkan, dan memenuhi prinsip tertib pengelolaan barang milik daerah.</p></aside></div>
+       <div className="approval-detail-side"><DecisionPanel requestId={record.id} disabled={!pending} />{!pending && <Panel title="Catatan keputusan"><p className="decision-note">{record.decisionNote}</p><small>{record.decidedAt}</small></Panel>}<aside className="policy-note"><strong>Dasar penelaahan</strong><p>Penggunaan fasilitas wajib mendukung tugas kedinasan, tersedia pada jadwal dimohonkan, dan memenuhi prinsip tertib pengelolaan barang milik daerah.</p></aside></div>
     </div>
   </div>;
 }

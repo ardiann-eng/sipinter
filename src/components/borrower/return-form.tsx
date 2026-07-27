@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { Camera, Send } from "lucide-react";
 import { Button, Input, Panel, Select } from "@/components";
-import type { InventoryRequest } from "@/lib/mock-data";
 import styles from "./borrower.module.css";
 
 const evidenceLabels = [
@@ -14,7 +13,7 @@ const evidenceLabels = [
 ] as const;
 const allowedPhotoTypes = ["image/jpeg", "image/png"];
 
-export function ReturnForm({ request }: { request: InventoryRequest }) {
+export function ReturnForm({ requestId, number, itemCount }: { requestId: string; number: string; itemCount: number }) {
   const [photos, setPhotos] = useState<Array<File | null>>([
     null,
     null,
@@ -27,7 +26,7 @@ export function ReturnForm({ request }: { request: InventoryRequest }) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [sent, setSent] = useState(false);
 
-  function submit() {
+  async function submit() {
     const next: Record<string, string> = {};
     const files = photos.filter((photo): photo is File => Boolean(photo));
     if (!condition) next.condition = "Kondisi akhir wajib dipilih.";
@@ -41,7 +40,20 @@ export function ReturnForm({ request }: { request: InventoryRequest }) {
         next.photos = "Ukuran setiap foto maksimal 5 MB.";
     });
     setErrors(next);
-    if (Object.keys(next).length === 0) setSent(true);
+    if (Object.keys(next).length) return;
+    try {
+      const data = new FormData();
+      data.set("condition", condition);
+      data.set("returnedAt", returnedAt);
+      data.set("note", note);
+      files.forEach((file) => data.append("photos", file));
+      const response = await fetch(`/api/borrowing-requests/${requestId}/return`, { method: "POST", body: data });
+      const result = await response.json() as { error?: string };
+      if (!response.ok) throw new Error(result.error ?? "Pengembalian belum dapat diproses.");
+      setSent(true);
+    } catch (error) {
+      setErrors({ submit: error instanceof Error ? error.message : "Pengembalian belum dapat diproses." });
+    }
   }
 
   return (
@@ -54,7 +66,7 @@ export function ReturnForm({ request }: { request: InventoryRequest }) {
       )}
       <Panel
         title="Kondisi pengembalian"
-        description={`Bukti untuk ${request.items.length} jenis barang pada ${request.number}`}
+        description={`Bukti untuk ${itemCount} jenis barang pada ${number}`}
       >
         <div className={styles.formGrid}>
           <Select
@@ -136,6 +148,7 @@ export function ReturnForm({ request }: { request: InventoryRequest }) {
             {errors.photos}
           </span>
         )}
+        {errors.submit && <span className={styles.error} role="alert">{errors.submit}</span>}
         <div className={styles.formFooter}>
           <span className={styles.muted} aria-live="polite">
             {photos.filter(Boolean).length} dari maksimal 4 foto dipilih

@@ -1,0 +1,68 @@
+import { BorrowingStatus, ItemCondition, Role } from "@prisma/client";
+import { NextRequest, NextResponse } from "next/server";
+import { requireRole } from "@/lib/auth";
+import { db } from "@/lib/db";
+import { storage } from "@/lib/storage";
+import { borrowingRequestSchema } from "@/lib/validation";
+import { transitionBorrowingRequest } from "@/lib/workflow";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+function registrationNumber() {
+  const now = new Date();
+  const month = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"][now.getUTCMonth()];
+  return `SIPINTER/PMK/${month}/${now.getUTCFullYear()}/${Date.now().toString().slice(-6)}`;
+}
+
+export async function POST(request: NextRequest) {
+  const user = await requireRole([Role.BORROWER]);
+  const form = await request.formData();
+  const ktp = form.get("ktp");
+  const supporting = form.get("supporting");
+  if (!(ktp instanceof File) || !(supporting instanceof File)) {
+    return NextResponse.json({ error: "KTP dan dokumen pendukung wajib diunggah." }, { status: 400 });
+  }
+
+  try {
+    const [ktpStored, supportingStored] = await Promise.all([storage.put(ktp), storage.put(supporting)]);
+    const items = JSON.parse(String(form.get("items") ?? "[]")) as unknown;
+    const parsed = borrowingRequestSchema.safeParse({
+      purpose: form.get("purpose"),
+      activityLocation: form.get("location"),
+      borrowDate: form.get("startDate"),
+      plannedReturnDate: form.get("endDate"),
+      ktpFile: ktpStored.key,
+      approvalLetterFile: supportingStored.key,
+      items,
+    });
+    if (!parsed.success) {
+      await Promise.all([storage.delete(ktpStored.key), storage.delete(supportingStored.key)]);
+      return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Pengajuan tidak valid." }, { status: 400 });
+    }
+
+    const record = await db.borrowingRequest.create({
+      data: {
+        registrationNumber: registrationNumber(),
+        borrowerId: user.id,
+        skpdId: user.skpdId,
+        purpose: parsed.data.purpose,
+        activityLocation: parsed.data.activityLocation,
+        borrowDate: parsed.data.borrowDate,
+        plannedReturnDate: parsed.data.plannedReturnDate,
+        ktpFile: ktpStored.key,
+        approvalLetterFile: supportingStored.key,
+        status: BorrowingStatus.DRAFT,
+        items: { create: parsed.data.items.map((item) => ({ ...item, initialCondition: item.initialCondition as ItemCondition })) },
+      },
+      select: { id: true },
+    });
+    await transitionBorrowingRequest(record.id, BorrowingStatus.WAITING_ADMIN_VERIFICATION, user, {
+      context: { ipAddress: request.headers.get("x-forwarded-for"), userAgent: request.headers.get("user-agent") },
+    });
+    return NextResponse.json({ id: record.id }, { status: 201 });
+  } catch (error) {
+    console.error("Pengajuan peminjaman gagal", error);
+    return NextResponse.json({ error: error instanceof Error ? error.message : "Pengajuan belum dapat diproses." }, { status: 400 });
+  }
+}
