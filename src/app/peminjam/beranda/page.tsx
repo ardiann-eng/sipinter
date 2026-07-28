@@ -18,8 +18,11 @@ import {
 } from "@/components/borrower/borrower-data";
 import { StatusBadge } from "@/components/borrower/borrower-ui";
 import styles from "@/components/borrower/borrower.module.css";
+import { requireRole } from "@/lib/auth";
+import { Role } from "@prisma/client";
 
-export default function BorrowerHomePage() {
+export default async function BorrowerHomePage() {
+  const user = await requireRole([Role.BORROWER]);
   const active = borrowerRequests.find(
     (request) => request.status === "WAITING_ADMIN_VERIFICATION",
   )!;
@@ -60,7 +63,7 @@ export default function BorrowerHomePage() {
         <div className={styles.welcomeContent}>
           <p className={styles.welcomeEyebrow}>RUANG KERJA PEMINJAM</p>
           <h1>
-            Selamat datang, <strong>Ahmad.</strong>
+            Selamat datang, <strong>{user.name}.</strong>
           </h1>
           <p className={styles.welcomeLead}>
             Kelola peminjaman fasilitas kedinasan dalam satu tempat.

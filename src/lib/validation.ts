@@ -40,6 +40,10 @@ export const userSchema = z.object({
   role: z.enum(["ADMIN", "BORROWER", "APPROVER"]),
 });
 
+export const profileContactSchema = z.object({
+  phone: z.string().trim().transform((value) => value.replace(/[\s()-]/g, "")).pipe(z.string().regex(/^(?:\+62|62|0)8\d{7,12}$/, "Gunakan nomor telepon Indonesia yang valid")),
+});
+
 export const itemSchema = z.object({
   itemCode: requiredText("Kode barang", 64).regex(/^[A-Za-z0-9./_-]+$/),
   name: requiredText("Nama barang"),

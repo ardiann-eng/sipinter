@@ -304,8 +304,17 @@ svg {
   padding-right: 36px;
 }
 .select-wrap {
+  border-radius: var(--radius-md);
   display: block;
   position: relative;
+}
+.select-wrap::after {
+  border: 1px solid rgb(15 76 129 / 8%);
+  border-radius: calc(var(--radius-md) - 2px);
+  content: "";
+  inset: 3px;
+  pointer-events: none;
+  position: absolute;
 }
 .select-wrap svg {
   color: var(--text-muted);
@@ -313,6 +322,7 @@ svg {
   position: absolute;
   right: 12px;
   top: 14px;
+  z-index: 1;
 }
 
 .badge {

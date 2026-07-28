@@ -1,7 +1,18 @@
-import { AdminHeader, Button, FilterBar, Panel, RequestTable, Select, s } from "@/components/admin/admin-ui";
-import { inventoryRequests } from "@/lib/mock-data";
+import Link from "next/link";
+import { BorrowingStatus, Role } from "@prisma/client";
+import { AdminHeader, Panel, Status, s } from "@/components/admin/admin-ui";
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableHeader, TableRow } from "@/components";
+import { formatDate } from "@/lib/format";
+import { requireRole } from "@/lib/auth";
+import { db } from "@/lib/db";
 
-export default function ReturnPage() {
-  const returns = [{ ...inventoryRequests[2], status: "WAITING_RETURN_VERIFICATION" as const }, { ...inventoryRequests[0], id: "borrow-006", number: "SIPINTER/PMK/VII/2026/00118", borrowerName: "Fitriani Basri", skpd: "Badan Perencanaan Pembangunan Daerah Kota Makassar", status: "RETURN_PROBLEM" as const, purpose: "Forum konsultasi publik RKPD" }];
-  return <><AdminHeader title="Verifikasi pengembalian" description="Bandingkan kondisi awal dan akhir, catat kelengkapan, serta tindak lanjuti kerusakan atau keterlambatan." /><section className={s.summaryStrip}><div className={s.summaryItem}><span>Menunggu pemeriksaan</span><strong>3</strong><small>5 unit fisik</small></div><div className={s.summaryItem}><span>Jatuh tempo hari ini</span><strong>4</strong><small>Sebelum 16.00 WITA</small></div><div className={s.summaryItem}><span>Terlambat</span><strong>2</strong><small>Total 5 hari</small></div><div className={s.summaryItem}><span>Bermasalah</span><strong>1</strong><small>Menunggu berita acara</small></div><div className={s.summaryItem}><span>Selesai bulan ini</span><strong>27</strong><small>87,1% tepat waktu</small></div></section><FilterBar searchPlaceholder="Cari nomor atau peminjam"><Select aria-label="Status"><option>Semua pengembalian aktif</option><option>Menunggu pemeriksaan</option><option>Bermasalah</option><option>Terlambat</option></Select><Button variant="outline">Terapkan</Button></FilterBar><Panel title="Antrean pemeriksaan" flush><RequestTable requests={returns} kind="return" /></Panel></>;
+export default async function ReturnPage() {
+  const actor = await requireRole([Role.ADMIN]);
+  const requests = await db.borrowingRequest.findMany({
+    where: { skpdId: actor.skpdId, status: { in: [BorrowingStatus.WAITING_RETURN_VERIFICATION, BorrowingStatus.RETURN_PROBLEM] } },
+    include: { borrower: { include: { skpd: true } }, items: true }, orderBy: { updatedAt: "asc" },
+  });
+  const waiting = requests.filter((request) => request.status === BorrowingStatus.WAITING_RETURN_VERIFICATION).length;
+  const problems = requests.filter((request) => request.status === BorrowingStatus.RETURN_PROBLEM).length;
+  return <><AdminHeader title="Verifikasi pengembalian" description="Bandingkan kondisi awal dan akhir, catat kelengkapan, serta tindak lanjuti masalah pengembalian." /><section className={s.summaryStrip}><div className={s.summaryItem}><span>Menunggu pemeriksaan</span><strong>{waiting}</strong><small>Perlu tindakan admin</small></div><div className={s.summaryItem}><span>Bermasalah</span><strong>{problems}</strong><small>Menunggu tindak lanjut</small></div></section><Panel title="Antrean pemeriksaan" flush>{requests.length ? <TableContainer><Table><TableHead><TableRow><TableHeader>Nomor</TableHeader><TableHeader>Peminjam</TableHeader><TableHeader>Keperluan</TableHeader><TableHeader>Jadwal</TableHeader><TableHeader>Status</TableHeader><TableHeader>Aksi</TableHeader></TableRow></TableHead><TableBody>{requests.map((request) => <TableRow key={request.id}><TableCell><strong className={s.mono}>{request.registrationNumber}</strong><div className={s.compact}>{request.items.length} jenis barang</div></TableCell><TableCell><strong>{request.borrower.name}</strong><div className={s.compact}>{request.borrower.skpd.name}</div></TableCell><TableCell>{request.purpose}</TableCell><TableCell>{formatDate(request.borrowDate, "dd MMM")} - {formatDate(request.plannedReturnDate, "dd MMM yyyy")}</TableCell><TableCell><Status value={request.status} /></TableCell><TableCell><Link className={s.link} href={`/admin/pengembalian/${request.id}`}>Periksa</Link></TableCell></TableRow>)}</TableBody></Table></TableContainer> : <p className={s.empty}>Tidak ada pengembalian yang perlu diperiksa.</p>}</Panel></>;
 }
