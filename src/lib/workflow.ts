@@ -106,7 +106,7 @@ export async function transitionBorrowingRequest(
       include: { items: { include: { item: true } }, returnVerification: true, borrower: true },
     });
     if (!request) throw new WorkflowError("Permohonan peminjaman tidak ditemukan");
-    assertSameSKPD(actor, request.skpdId);
+    if (actor.role === Role.BORROWER) assertSameSKPD(actor, request.skpdId);
     authorizeTransition(request.status, to, actor.role, options.note);
     assertOwner(actor, request.borrowerId);
 

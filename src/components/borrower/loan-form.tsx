@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   CalendarDays,
   Check,
@@ -60,6 +61,9 @@ export function LoanForm({
   const [supporting, setSupporting] = useState<File | null>(null);
   const [errors, setErrors] = useState<Errors>({});
   const [message, setMessage] = useState("");
+  const [submitError, setSubmitError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     const saved = window.localStorage.getItem("sipinter-borrower-draft");
@@ -79,6 +83,7 @@ export function LoanForm({
     setDraft((current) => ({ ...current, [key]: value }));
     setErrors((current) => ({ ...current, [key]: "" }));
     setMessage("");
+    setSubmitError("");
   }
 
   function validateFile(file: File | null, label: string) {
@@ -133,10 +138,53 @@ export function LoanForm({
       "Draf tersimpan di perangkat ini. Dokumen perlu dipilih kembali saat melanjutkan.",
     );
   }
-  function submit() {
+  async function submit() {
     if (!validate(4)) return;
-    window.localStorage.removeItem("sipinter-borrower-draft");
-    setMessage("Pengajuan berhasil dikirim untuk verifikasi administrasi.");
+    if (!ktp || !supporting) return;
+
+    setSubmitting(true);
+    setMessage("");
+    setSubmitError("");
+    try {
+      const data = new FormData();
+      data.set("purpose", draft.purpose);
+      data.set("location", draft.location);
+      data.set("startDate", draft.startDate);
+      data.set("endDate", draft.endDate);
+      data.set("ktp", ktp);
+      data.set("supporting", supporting);
+      data.set(
+        "items",
+        JSON.stringify(
+          selected.map((item) => ({
+            itemId: item.id,
+            quantity: draft.items[item.id],
+            initialCondition: item.condition,
+          })),
+        ),
+      );
+
+      const response = await fetch("/api/borrowing-requests", {
+        method: "POST",
+        body: data,
+      });
+      const result = (await response.json()) as { id?: string; error?: string };
+      if (!response.ok || !result.id) {
+        throw new Error(result.error ?? "Pengajuan belum dapat dikirim.");
+      }
+
+      window.localStorage.removeItem("sipinter-borrower-draft");
+      router.push("/peminjam/peminjaman");
+      router.refresh();
+    } catch (cause) {
+      setSubmitError(
+        cause instanceof Error
+          ? cause.message
+          : "Pengajuan belum dapat dikirim. Silakan coba kembali.",
+      );
+    } finally {
+      setSubmitting(false);
+    }
   }
   const selected = catalog.filter(
     (item) => (draft.items[item.id] ?? 0) > 0,
@@ -197,6 +245,11 @@ export function LoanForm({
           {message && (
             <div className={styles.success} role="status" aria-live="polite">
               {message}
+            </div>
+          )}
+          {submitError && (
+            <div className={styles.submitError} role="alert">
+              {submitError}
             </div>
           )}
           {step === 0 && (
@@ -267,7 +320,7 @@ export function LoanForm({
           )}
           {step === 2 && (
             <div className={styles.catalog}>
-              {availableItems.map((item) => {
+              {catalog.map((item) => {
                 const quantity = draft.items[item.id] ?? 0;
                 return (
                   <div
@@ -429,8 +482,8 @@ export function LoanForm({
                   Selanjutnya <ChevronRight size={16} />
                 </Button>
               ) : (
-                <Button type="button" onClick={submit}>
-                  Kirim pengajuan
+                <Button type="button" loading={submitting} onClick={submit}>
+                  {submitting ? "Mengirim pengajuan..." : "Kirim pengajuan"}
                 </Button>
               )}
             </div>

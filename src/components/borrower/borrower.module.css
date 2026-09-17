@@ -866,6 +866,14 @@
   margin-bottom: 16px;
   padding: 13px 15px;
 }
+.submitError {
+  background: var(--danger-soft);
+  border: 1px solid var(--danger);
+  border-radius: 12px;
+  color: var(--danger);
+  margin-bottom: 16px;
+  padding: 13px 15px;
+}
 .photoGrid {
   display: grid;
   gap: 12px;

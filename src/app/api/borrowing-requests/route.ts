@@ -1,4 +1,4 @@
-import { BorrowingStatus, ItemCondition, Role } from "@prisma/client";
+import { BorrowingStatus, ItemCondition, NotificationType, Role, UserStatus } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import { requireRole } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -60,6 +60,25 @@ export async function POST(request: NextRequest) {
     await transitionBorrowingRequest(record.id, BorrowingStatus.WAITING_ADMIN_VERIFICATION, user, {
       context: { ipAddress: request.headers.get("x-forwarded-for"), userAgent: request.headers.get("user-agent") },
     });
+    try {
+      const admins = await db.user.findMany({
+        where: { role: Role.ADMIN, status: UserStatus.ACTIVE },
+        select: { id: true },
+      });
+      if (admins.length) {
+        await db.notification.createMany({
+          data: admins.map((admin) => ({
+            userId: admin.id,
+            type: NotificationType.ACTION_REQUIRED,
+            title: "Pengajuan peminjaman baru",
+            message: `${user.name} mengirim pengajuan peminjaman yang perlu diverifikasi.`,
+            link: `/admin/verifikasi/${record.id}`,
+          })),
+        });
+      }
+    } catch (notificationError) {
+      console.error("Notifikasi admin gagal dibuat", notificationError);
+    }
     return NextResponse.json({ id: record.id }, { status: 201 });
   } catch (error) {
     console.error("Pengajuan peminjaman gagal", error);

@@ -1,7 +1,52 @@
-import { AdminHeader, Button, FilterBar, Panel, RequestTable, Select, s } from "@/components/admin/admin-ui";
-import { inventoryRequests } from "@/lib/mock-data";
+import { EmptyState } from "@/components";
+import { AdminHeader, Panel, RequestTable, s } from "@/components/admin/admin-ui";
+import { requireRole } from "@/lib/auth";
+import { toBorrowerRequest } from "@/lib/borrower-request";
+import { db } from "@/lib/db";
+import { BorrowingStatus, Role } from "@prisma/client";
 
-export default function VerificationPage() {
-  const requests = [inventoryRequests[0], { ...inventoryRequests[1], id: "borrow-005", number: "SIPINTER/PMK/VII/2026/00129", status: "WAITING_ADMIN_VERIFICATION" as const, borrowerName: "Andi Tenri", purpose: "Bimbingan teknis pengelolaan data sektoral" }];
-  return <><AdminHeader title="Verifikasi peminjaman" description="Periksa kelengkapan, kesesuaian kebutuhan, dan ketersediaan barang sebelum diteruskan kepada Sekretaris Daerah." /><FilterBar searchPlaceholder="Cari nomor, pemohon, atau SKPD"><Select aria-label="Status" defaultValue="pending"><option value="pending">Menunggu verifikasi</option><option value="revision">Perlu revisi</option><option value="all">Semua status</option></Select><Select aria-label="Urutan"><option>Tenggat terdekat</option><option>Pengajuan terbaru</option></Select><Button variant="outline">Terapkan</Button></FilterBar><div className={s.note}><strong>Standar layanan:</strong> Verifikasi administratif maksimal 1 hari kerja. Dua pengajuan perlu diproses sebelum pukul 15.00 WITA.</div><Panel title="Antrean verifikasi" description="2 permohonan membutuhkan tindakan" flush><RequestTable requests={requests} /></Panel></>;
+export const dynamic = "force-dynamic";
+
+export default async function VerificationPage() {
+  await requireRole([Role.ADMIN]);
+  const records = await db.borrowingRequest.findMany({
+    where: { status: BorrowingStatus.WAITING_ADMIN_VERIFICATION },
+    include: {
+      borrower: { include: { skpd: true } },
+      items: { include: { item: true } },
+    },
+    orderBy: [{ submittedAt: "asc" }, { createdAt: "asc" }],
+  });
+  const requests = records.map(toBorrowerRequest);
+  const countLabel = `${requests.length} permohonan membutuhkan tindakan`;
+
+  return (
+    <>
+      <AdminHeader
+        title="Verifikasi peminjaman"
+        description="Periksa kelengkapan, kesesuaian kebutuhan, dan ketersediaan barang sebelum diteruskan kepada Sekretaris Daerah."
+      />
+      <section className={s.summaryStrip} aria-label="Ringkasan antrean">
+        <div className={s.summaryItem}>
+          <span>Menunggu verifikasi</span>
+          <strong>{requests.length}</strong>
+          <small>Permohonan perlu tindakan admin</small>
+        </div>
+      </section>
+      <div className={s.note}>
+        <strong>Standar layanan:</strong> Verifikasi administratif maksimal 1
+        hari kerja sejak pengajuan diterima.
+      </div>
+      <Panel title="Antrean verifikasi" description={countLabel} flush>
+        {requests.length ? (
+          <RequestTable requests={requests} />
+        ) : (
+          <EmptyState
+            title="Antrean verifikasi kosong"
+            description="Belum ada pengajuan peminjaman baru yang perlu diperiksa."
+          />
+        )}
+      </Panel>
+    </>
+  );
 }
