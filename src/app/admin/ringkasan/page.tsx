@@ -5,11 +5,15 @@ import { AdminHeader, LinkButton, Panel, RequestTable, formatDateTime, s } from 
 import { requireRole } from "@/lib/auth";
 import { toBorrowerRequest } from "@/lib/borrower-request";
 import { db } from "@/lib/db";
+import { runBorrowingMaintenance } from "@/lib/borrowing-maintenance";
 
 export const dynamic = "force-dynamic";
 
 export default async function RingkasanPage() {
-  await requireRole([Role.ADMIN]);
+  const actor = await requireRole([Role.ADMIN]);
+  await runBorrowingMaintenance(actor).catch((error) => {
+    console.error("Borrowing maintenance failed while loading the admin dashboard", error);
+  });
   const [requests, activeBorrowings, overdueReturns, items, recentAudits] = await Promise.all([
     db.borrowingRequest.findMany({ where: { status: BorrowingStatus.WAITING_ADMIN_VERIFICATION }, include: { borrower: { include: { skpd: true } }, items: { include: { item: true } } }, orderBy: [{ submittedAt: "asc" }, { createdAt: "asc" }], take: 5 }),
     db.borrowingRequest.count({ where: { status: BorrowingStatus.BORROWED } }),

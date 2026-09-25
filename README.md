@@ -2,7 +2,7 @@
 
 SIPINTER adalah Sistem Informasi Peminjaman Inventaris Kantor Terintegrasi Pemerintah Kota Makassar. Aplikasi mengelola katalog inventaris, pengajuan, verifikasi, persetujuan Sekretaris Daerah, penyerahan, pengembalian, laporan, dan audit berdasarkan peran.
 
-Status MVP: frontend responsif dan seluruh alur operasional dapat dinavigasi memakai data contoh realistis. Autentikasi, otorisasi server, schema PostgreSQL, storage lokal, audit, dan layanan state transition tersedia. Mutasi selain login/logout belum seluruhnya dihubungkan dari form UI ke server action/Prisma; lihat keterbatasan sebelum deployment.
+Status MVP: frontend responsif dan alur peminjaman kendaraan sudah terhubung ke database, mulai dari pengajuan, revisi, verifikasi admin, persetujuan Sekda, penyerahan, pengembalian, penanganan masalah, hingga penyelesaian. Autentikasi, otorisasi server, schema Turso/libSQL, storage lokal, audit, reservasi jadwal, dan validasi transisi status tersedia.
 
 ## Stack
 
@@ -41,6 +41,7 @@ Prisma Migrate tidak menerapkan migration langsung ke Turso. Tinjau SQL pada `pr
 | `AUTH_SECRET` | Ya | Secret acak minimal 32 karakter untuk menandatangani JWT HS256. Gunakan nilai berbeda per environment. |
 | `NEXT_PUBLIC_APP_VERSION` | Ya | Versi yang ditampilkan pada halaman login. Nilai ini terekspos ke browser. |
 | `UPLOAD_DIR` | Ya untuk upload lokal | Direktori penyimpanan dokumen MVP. |
+| `CRON_SECRET` | Ya untuk maintenance terjadwal | Secret Bearer untuk memanggil endpoint maintenance peminjaman. |
 | `DEMO_ADMIN_PASSWORD` | Saat seed | Kata sandi akun demo administrator. |
 | `DEMO_BORROWER_PASSWORD` | Saat seed | Kata sandi akun demo peminjam. |
 | `DEMO_APPROVER_PASSWORD` | Saat seed | Kata sandi akun demo Sekda. |
@@ -89,6 +90,8 @@ Daftar route operasional utama:
 
 Alur status lengkap tercatat di [`docs/WORKFLOW.md`](docs/WORKFLOW.md). Matriks akses ada di [`docs/ROLE_PERMISSION_MATRIX.md`](docs/ROLE_PERMISSION_MATRIX.md). Transisi domain harus melewati layanan workflow, bukan update status Prisma langsung.
 
+Pengingat pengembalian dan eskalasi keterlambatan dijalankan oleh `GET /api/maintenance/borrowing` dengan header `Authorization: Bearer <CRON_SECRET>`. Jadwalkan endpoint tersebut minimal sekali sehari. Ringkasan admin juga menjalankannya secara oportunistik tanpa membuat halaman gagal bila maintenance sedang bermasalah.
+
 ## Arsitektur
 
 ```text
@@ -122,17 +125,17 @@ Migrasi menuju object storage:
 - Lint: `npm run lint`
 - Test: `npm test`
 - Production build: `npm run build`
+- E2E lintas peran: `npm run test:e2e:borrowing` setelah server production berjalan dan database uji sudah di-seed.
 
 Uji manual minimal: login tiap role, redirect role, akses silang role, token rusak/kedaluwarsa, callback eksternal, logout, layout mobile, dan DB tidak tersedia saat build.
 
 ## Keterbatasan MVP
 
-- Halaman operasional memakai service abstraction dan data mock. Selain autentikasi, form dan tombol operasional belum seluruhnya melakukan persistence ke PostgreSQL. Layanan domain pada `src/lib/workflow.ts` menjadi kontrak integrasi server action berikutnya.
-- Preview/unduh dokumen, ekspor PDF/Excel, QR/BAST final, import barang, dan pengaturan persisten masih berupa presentasi prototipe.
+- Preview/unduh dokumen, ekspor PDF/Excel, QR/BAST final, dan import barang belum tersedia.
 - Migration awal Turso tersedia. Perubahan schema berikutnya tetap harus dibuat lokal, ditinjau, lalu diterapkan melalui script migration Turso.
 - Checkbox "ingat saya" belum mengubah durasi cookie; sesi tetap delapan jam.
 - Lupa kata sandi diarahkan ke helpdesk, belum ada reset token mandiri.
-- Pusat notifikasi membaca data per pengguna dari database; CTA menandai notifikasi sebagai terbaca. Pagination, tandai semua terbaca, dan trigger otomatis dari workflow/pengingat tenggat belum tersedia.
+- Pusat notifikasi membaca data per pengguna dari database; CTA menandai notifikasi sebagai terbaca. Pagination dan tandai semua terbaca belum tersedia.
 - Profil memakai klaim sesi; perubahan profil di DB terlihat setelah login ulang.
 - Middleware memvalidasi token, bukan status akun terbaru di DB. Mutasi sensitif harus memakai `requireUser()` atau `requireRole()`.
 - Upload lokal tidak cocok untuk deployment serverless/replica tanpa shared persistent volume.
@@ -141,9 +144,8 @@ Uji manual minimal: login tiap role, redirect role, akses silang role, token rus
 ## Langkah Berikutnya
 
 1. Tambahkan rate limiting berbasis IP dan identifier serta audit login gagal.
-2. Hubungkan seluruh form ke server action yang memanggil `requireRole()`, Zod, workflow, storage, dan audit dalam transaksi.
-3. Integrasikan SSO pemerintah/MFA dan kebijakan reset kata sandi.
-4. Buat trigger notifikasi dari workflow, pengingat H-3/H-1, pagination, dan tandai semua terbaca.
-5. Migrasikan storage ke object storage privat dan antivirus scanning.
-6. Tambahkan pengujian integrasi PostgreSQL, middleware, workflow, serta E2E lintas role.
-7. Tambahkan observability, backup/restore drill, dan prosedur rotasi `AUTH_SECRET`.
+2. Integrasikan SSO pemerintah/MFA dan kebijakan reset kata sandi.
+3. Tambahkan pengingat bertahap H-3/H-1, pagination notifikasi, dan tandai semua terbaca.
+4. Migrasikan storage ke object storage privat dan antivirus scanning.
+5. Tambahkan pengujian integrasi Turso/libSQL untuk concurrency dan kegagalan transaksi.
+6. Tambahkan observability, backup/restore drill, dan prosedur rotasi `AUTH_SECRET`.

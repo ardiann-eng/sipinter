@@ -6,6 +6,7 @@ import { storage } from "@/lib/storage";
 import { borrowingRequestSchema } from "@/lib/validation";
 import { transitionBorrowingRequest } from "@/lib/workflow";
 import { apiErrorResponse } from "@/lib/api-response";
+import { getOperationalSettings, validateBorrowingPolicy } from "@/lib/operational-settings";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -43,6 +44,7 @@ export async function POST(request: NextRequest) {
       await Promise.all([storage.delete(ktpStored.key), storage.delete(supportingStored.key)]);
       return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Pengajuan tidak valid." }, { status: 400 });
     }
+    validateBorrowingPolicy(parsed.data.borrowDate, parsed.data.plannedReturnDate, await getOperationalSettings());
 
     const record = await db.borrowingRequest.create({
       data: {

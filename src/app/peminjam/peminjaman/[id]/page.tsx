@@ -29,7 +29,7 @@ export default async function BorrowingDetailPage({ params }: { params: Promise<
   const returnableStatuses: BorrowingStatus[] = [BorrowingStatus.BORROWED, BorrowingStatus.OVERDUE, BorrowingStatus.WAITING_RETURN_VERIFICATION, BorrowingStatus.RETURN_PROBLEM];
   const returnable = returnableStatuses.includes(record.status);
   const nextAction = revision
-    ? { title: "Perbaikan dokumen diperlukan", description: record.adminNote || "Periksa kembali dokumen pengajuan sebelum dikirim ulang.", label: "Ajukan ulang", href: "/peminjam/ajukan" }
+    ? { title: "Perbaikan dokumen diperlukan", description: record.adminNote || "Periksa kembali dokumen pengajuan sebelum dikirim ulang.", label: "Perbaiki pengajuan", href: `/peminjam/ajukan?revision=${record.id}` }
     : returnable
       ? { title: record.status === BorrowingStatus.WAITING_RETURN_VERIFICATION ? "Pengembalian sedang diperiksa" : record.status === BorrowingStatus.RETURN_PROBLEM ? "Pengembalian memerlukan tindak lanjut" : "Kendaraan perlu dikembalikan", description: record.adminNote || `Batas pengembalian ${formatDate(record.plannedReturnDate)}.`, label: "Buka pengembalian", href: `/peminjam/pengembalian/${record.id}` }
       : { title: record.status === BorrowingStatus.COMPLETED ? "Peminjaman telah selesai" : record.status === BorrowingStatus.READY_FOR_HANDOVER ? "Kendaraan siap diserahkan" : "Pengajuan sedang diproses", description: record.status === BorrowingStatus.READY_FOR_HANDOVER ? "Tunggu informasi jadwal pengambilan dari pengelola kendaraan." : "Status akan diperbarui setelah tahapan berikutnya selesai." };

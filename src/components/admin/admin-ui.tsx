@@ -34,22 +34,11 @@ import type {
   InventoryItem,
   InventoryRequest,
   RequestStatus,
-} from "@/lib/mock-data";
+} from "@/lib/view-models";
 import { formatCurrency, formatDate, formatDateTime } from "@/lib/format";
 import s from "./admin.module.css";
 
 export { s };
-
-export const adminUser = {
-  name: "Syarifuddin",
-  email: "syarifuddin@makassarkota.go.id",
-  role: "ADMIN" as const,
-  unit: "Bagian Umum Sekretariat Daerah",
-};
-export const adminAccess = {
-  requiredRole: "ADMIN" as const,
-  enforcement: "middleware" as const,
-};
 
 export function AdminHeader(props: React.ComponentProps<typeof PageHeader>) {
   return <PageHeader eyebrow="Administrasi SIPINTER" {...props} />;

@@ -1,5 +1,5 @@
 import type { BorrowingStatus, ItemCondition } from "@prisma/client";
-import type { InventoryRequest, RequestStatus } from "@/lib/mock-data";
+import type { InventoryRequest, RequestStatus } from "@/lib/view-models";
 
 type BorrowingRequestRecord = {
   id: string;

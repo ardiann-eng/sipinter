@@ -110,9 +110,14 @@ export const returnVerificationSchema = z.object({
   issueType: z.enum(["INCOMPLETE", "DAMAGED", "NOT_FUNCTIONING", "LOST", "OTHER"]).optional().nullable(),
   issueDescription: optionalText(),
   followUpRecommendation: optionalText(),
+  resolutionNote: optionalText(),
+  serviceableReturnConfirmed: z.boolean().optional(),
 }).superRefine((value, context) => {
   if (value.result === "PROBLEM" && (!value.issueType || !value.issueDescription)) {
     context.addIssue({ code: "custom", path: ["issueDescription"], message: "issueType dan issueDescription wajib" });
+  }
+  if (value.serviceableReturnConfirmed && (!value.resolutionNote || value.resolutionNote.trim().length < 10)) {
+    context.addIssue({ code: "custom", path: ["resolutionNote"], message: "Catatan penyelesaian minimal 10 karakter" });
   }
 });
 

@@ -14,7 +14,6 @@ import {
   Save,
 } from "lucide-react";
 import { Button, Input, Panel, cx } from "@/components";
-import { availableItems, borrower } from "./borrower-data";
 import styles from "./borrower.module.css";
 
 type Draft = {
@@ -51,18 +50,29 @@ function localDateValue(date = new Date()) {
   return new Date(date.getTime() - offset).toISOString().slice(0, 10);
 }
 
-type BorrowerProfile = typeof borrower;
-type CatalogItem = (typeof availableItems)[number];
+function addDays(value: string, days: number) {
+  const date = new Date(`${value}T00:00:00Z`);
+  date.setUTCDate(date.getUTCDate() + days);
+  return date.toISOString().slice(0, 10);
+}
+
+type BorrowerProfile = { name: string; nip: string; email: string; phone: string; unit: string; skpd: string; employeeId: string };
+type CatalogItem = { id: string; name: string; code: string; registrationNumber: string; category: string; location: string; unit: string; availableStock: number; totalStock: number; condition: "GOOD" | "LIGHTLY_DAMAGED" | "HEAVILY_DAMAGED" | "LOST"; status: "AVAILABLE"; imageUrl?: string; description?: string };
+type RevisionDraft = { id: string; purpose: string; location: string; startDate: string; endDate: string; items: Record<string, number>; hasKtp: boolean; hasSupporting: boolean; adminNote?: string };
 
 export function LoanForm({
   borrower: profile,
   items: catalog,
+  revision,
+  policy,
 }: {
   borrower: BorrowerProfile;
   items: CatalogItem[];
+  revision?: RevisionDraft;
+  policy: { standardDurationDays: number; minimumLeadDays: number };
 }) {
   const [step, setStep] = useState(0);
-  const [draft, setDraft] = useState<Draft>(initialDraft);
+  const [draft, setDraft] = useState<Draft>(() => revision ? { purpose: revision.purpose, location: revision.location, startDate: revision.startDate, endDate: revision.endDate, items: revision.items, note: "", formalReview: false } : initialDraft);
   const [ktp, setKtp] = useState<File | null>(null);
   const [supporting, setSupporting] = useState<File | null>(null);
   const [errors, setErrors] = useState<Errors>({});
@@ -70,9 +80,11 @@ export function LoanForm({
   const [submitError, setSubmitError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const router = useRouter();
-  const minBorrowDate = localDateValue();
+  const minBorrowDate = localDateValue(new Date(Date.now() + policy.minimumLeadDays * 86_400_000));
+  const maxReturnDate = draft.startDate ? addDays(draft.startDate, policy.standardDurationDays - 1) : undefined;
 
   useEffect(() => {
+    if (revision) return;
     const saved = window.localStorage.getItem("sipinter-borrower-draft");
     if (saved)
       try {
@@ -84,7 +96,7 @@ export function LoanForm({
       } catch {
         window.localStorage.removeItem("sipinter-borrower-draft");
       }
-  }, []);
+  }, [revision]);
 
   function update<K extends keyof Draft>(key: K, value: Draft[K]) {
     setDraft((current) => ({ ...current, [key]: value }));
@@ -93,7 +105,8 @@ export function LoanForm({
     setSubmitError("");
   }
 
-  function validateFile(file: File | null, label: string) {
+  function validateFile(file: File | null, label: string, existing = false) {
+    if (!file && existing) return "";
     if (!file) return `${label} wajib diunggah.`;
     if (!allowedDocumentTypes.includes(file.type))
       return "Format harus PDF, JPG, atau PNG.";
@@ -114,6 +127,10 @@ export function LoanForm({
         next.startDate = "Tanggal mulai tidak boleh berada di masa lalu.";
       if (draft.startDate && draft.endDate && draft.endDate < draft.startDate)
         next.endDate = "Tanggal selesai tidak boleh sebelum tanggal mulai.";
+      if (draft.startDate && draft.endDate) {
+        const duration = Math.round((new Date(draft.endDate).getTime() - new Date(draft.startDate).getTime()) / 86_400_000) + 1;
+        if (duration > policy.standardDurationDays) next.endDate = `Durasi maksimal ${policy.standardDurationDays} hari kalender.`;
+      }
     }
     if (
       currentStep === 2 &&
@@ -121,8 +138,8 @@ export function LoanForm({
     )
       next.items = "Pilih sedikitnya satu kendaraan.";
     if (currentStep === 3) {
-      next.ktp = validateFile(ktp, "KTP");
-      next.supporting = validateFile(supporting, "Dokumen pendukung");
+      next.ktp = validateFile(ktp, "KTP", revision?.hasKtp);
+      next.supporting = validateFile(supporting, "Dokumen pendukung", revision?.hasSupporting);
       if (!next.ktp) delete next.ktp;
       if (!next.supporting) delete next.supporting;
     }
@@ -147,7 +164,7 @@ export function LoanForm({
   }
   async function submit() {
     if (!validate(4)) return;
-    if (!ktp || !supporting) return;
+    if ((!ktp && !revision?.hasKtp) || (!supporting && !revision?.hasSupporting)) return;
 
     setSubmitting(true);
     setMessage("");
@@ -158,8 +175,8 @@ export function LoanForm({
       data.set("location", draft.location);
       data.set("startDate", draft.startDate);
       data.set("endDate", draft.endDate);
-      data.set("ktp", ktp);
-      data.set("supporting", supporting);
+      if (ktp) data.set("ktp", ktp);
+      if (supporting) data.set("supporting", supporting);
       data.set(
         "items",
         JSON.stringify(
@@ -171,7 +188,7 @@ export function LoanForm({
         ),
       );
 
-      const response = await fetch("/api/borrowing-requests", {
+      const response = await fetch(revision ? `/api/borrowing-requests/${revision.id}/resubmit` : "/api/borrowing-requests", {
         method: "POST",
         body: data,
       });
@@ -181,7 +198,7 @@ export function LoanForm({
       }
 
       window.localStorage.removeItem("sipinter-borrower-draft");
-      router.push("/peminjam/peminjaman");
+      router.push(revision ? `/peminjam/peminjaman/${revision.id}` : "/peminjam/peminjaman");
       router.refresh();
     } catch (cause) {
       setSubmitError(
@@ -247,7 +264,7 @@ export function LoanForm({
       >
         <Panel
           title={`Langkah ${step + 1}: ${steps[step]}`}
-          description="Isian tersimpan saat Anda berpindah langkah."
+          description={revision ? "Perbaiki data sesuai catatan administrator, lalu kirim ulang pengajuan yang sama." : "Isian tersimpan saat Anda berpindah langkah."}
         >
           {message && (
             <div className={styles.success} role="status" aria-live="polite">
@@ -259,6 +276,7 @@ export function LoanForm({
               {submitError}
             </div>
           )}
+          {revision?.adminNote && step === 0 && <div className={styles.notice} role="status"><div><strong>Catatan revisi administrator</strong><p>{revision.adminNote}</p></div></div>}
           {step === 0 && (
             <div className={styles.formGrid}>
               <Input label="Nama lengkap" value={profile.name} disabled />
@@ -310,10 +328,12 @@ export function LoanForm({
               <DateField
                 label="Tanggal selesai"
                 min={draft.startDate || minBorrowDate}
+                max={maxReturnDate}
                 value={draft.endDate}
                 error={errors.endDate}
                 onChange={(value) => update("endDate", value)}
               />
+              <p className={`${styles.muted} ${styles.wide}`}>Pengajuan minimal {policy.minimumLeadDays} hari sebelum penggunaan dan maksimal {policy.standardDurationDays} hari kalender.</p>
               <div className={`${styles.field} ${styles.wide}`}>
                 <label htmlFor="note">Catatan kebutuhan</label>
                 <textarea
@@ -404,6 +424,7 @@ export function LoanForm({
                 label="KTP peminjam"
                 hint="Wajib · PDF/JPG/PNG · maksimal 5 MB"
                 file={ktp}
+                existing={revision?.hasKtp}
                 error={errors.ktp}
                 onChange={setKtp}
               />
@@ -412,6 +433,7 @@ export function LoanForm({
                 label="Dokumen pendukung / surat tugas"
                 hint="Wajib · PDF/JPG/PNG · maksimal 5 MB"
                 file={supporting}
+                existing={revision?.hasSupporting}
                 error={errors.supporting}
                 onChange={setSupporting}
               />
@@ -453,8 +475,8 @@ export function LoanForm({
                 <div>
                   <span>Dokumen</span>
                   <strong>
-                    {ktp?.name ?? "KTP belum dipilih"};{" "}
-                    {supporting?.name ?? "dokumen pendukung belum dipilih"}
+                    {ktp?.name ?? (revision?.hasKtp ? "KTP tersimpan" : "KTP belum dipilih")};{" "}
+                    {supporting?.name ?? (revision?.hasSupporting ? "dokumen pendukung tersimpan" : "dokumen pendukung belum dipilih")}
                   </strong>
                 </div>
               </div>
@@ -481,9 +503,7 @@ export function LoanForm({
             </div>
           )}
           <div className={styles.formFooter}>
-            <Button type="button" variant="ghost" onClick={saveDraft}>
-              <Save size={16} /> Simpan draf
-            </Button>
+            {revision ? <span /> : <Button type="button" variant="ghost" onClick={saveDraft}><Save size={16} /> Simpan draf</Button>}
             <div className={styles.formFooterRight}>
               {step > 0 && (
                 <Button
@@ -500,7 +520,7 @@ export function LoanForm({
                 </Button>
               ) : (
                 <Button type="button" loading={submitting} onClick={submit}>
-                  {submitting ? "Mengirim pengajuan..." : "Kirim pengajuan"}
+                  {submitting ? "Mengirim pengajuan..." : revision ? "Kirim ulang pengajuan" : "Kirim pengajuan"}
                 </Button>
               )}
             </div>
@@ -533,12 +553,14 @@ export function LoanForm({
 function DateField({
   label,
   min,
+  max,
   value,
   error,
   onChange,
 }: {
   label: string;
   min: string;
+  max?: string;
   value: string;
   error?: string;
   onChange: (value: string) => void;
@@ -555,6 +577,7 @@ function DateField({
         <input
           type="date"
           min={min}
+          max={max}
           required
           value={value}
           aria-invalid={Boolean(error)}
@@ -571,6 +594,7 @@ function FileField({
   label,
   hint,
   file,
+  existing = false,
   error,
   onChange,
 }: {
@@ -578,12 +602,13 @@ function FileField({
   label: string;
   hint: string;
   file: File | null;
+  existing?: boolean;
   error?: string;
   onChange: (file: File | null) => void;
 }) {
   return (
     <label
-      className={cx(styles.upload, file && styles.uploadComplete)}
+      className={cx(styles.upload, (file || existing) && styles.uploadComplete)}
       htmlFor={id}
     >
       <span className={styles.fieldLabel}>
@@ -598,7 +623,7 @@ function FileField({
         onChange={(event) => onChange(event.target.files?.[0] ?? null)}
       />
       <span id={`${id}-feedback`} aria-live="polite">
-        {file && <span className={styles.fileName}>{file.name}</span>}
+        {file ? <span className={styles.fileName}>{file.name}</span> : existing && <span className={styles.fileName}>Dokumen tersimpan · pilih berkas hanya jika ingin mengganti</span>}
         {error && (
           <span className={styles.error} role="alert">
             {error}

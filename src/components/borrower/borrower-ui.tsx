@@ -13,14 +13,13 @@ import {
   statusTone,
 } from "@/components";
 import { formatDate } from "@/lib/format";
-import type { InventoryRequest, RequestStatus } from "@/lib/mock-data";
-import { statusLabels } from "./borrower-data";
+import { requestStatusLabels, type InventoryRequest, type RequestStatus } from "@/lib/view-models";
 import styles from "./borrower.module.css";
 
 export function StatusBadge({ status }: { status: RequestStatus }) {
   return (
     <span className={styles.status} data-tone={statusTone[status]}>
-      {statusLabels[status]}
+      {requestStatusLabels[status]}
     </span>
   );
 }

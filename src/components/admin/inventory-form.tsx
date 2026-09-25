@@ -4,7 +4,7 @@ import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button, Panel } from "@/components";
-import type { InventoryItem } from "@/lib/mock-data";
+import type { InventoryItem } from "@/lib/view-models";
 import s from "./admin.module.css";
 
 export function InventoryForm({ item }: { item?: InventoryItem }) {

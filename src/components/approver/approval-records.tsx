@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, Clock3 } from "lucide-react";
 import { Badge, EmptyState, MobileRecord, Panel, Table, TableBody, TableCell, TableContainer, TableHead, TableHeader, TableRow } from "@/components";
-import type { ApprovalRecord } from "./data";
+import type { ApprovalRecord } from "@/lib/view-models";
 
 function statusBadge(status: ApprovalRecord["status"]) {
   if (status === "DISETUJUI") return <Badge tone="success" dot>Disetujui</Badge>;

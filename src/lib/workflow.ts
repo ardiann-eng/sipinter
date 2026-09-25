@@ -4,9 +4,11 @@ import {
   BorrowingStatus,
   CompletenessStatus,
   ItemStatus,
+  NotificationType,
   ReturnSubmissionStatus,
   ReturnVerificationResult,
   Role,
+  type Prisma,
   type ItemCondition,
   type ReturnIssueType,
 } from "@prisma/client";
@@ -14,6 +16,7 @@ import { writeAudit } from "./audit";
 import { assertRole, assertSameSKPD } from "./authorization";
 import { db } from "./db";
 import { AuthorizationError, WorkflowError, type RequestContext, type SessionUser } from "./types";
+import { hasScheduleCapacity } from "./borrowing-policy";
 
 type Transition = {
   from: BorrowingStatus;
@@ -45,6 +48,46 @@ export const lifecycleTransitions: readonly Transition[] = [
   { from: BorrowingStatus.BORROWED, to: BorrowingStatus.OVERDUE, roles: [Role.ADMIN] },
   { from: BorrowingStatus.OVERDUE, to: BorrowingStatus.WAITING_RETURN, roles: [Role.BORROWER] },
 ] as const;
+
+export const reservationStatuses: readonly BorrowingStatus[] = [
+  BorrowingStatus.WAITING_SEKDA_APPROVAL,
+  BorrowingStatus.APPROVED,
+  BorrowingStatus.READY_FOR_HANDOVER,
+  BorrowingStatus.BORROWED,
+  BorrowingStatus.WAITING_RETURN,
+  BorrowingStatus.WAITING_RETURN_VERIFICATION,
+  BorrowingStatus.RETURN_PROBLEM,
+  BorrowingStatus.OVERDUE,
+];
+
+async function assertScheduleAvailability(
+  tx: Prisma.TransactionClient,
+  request: {
+    id: string;
+    borrowDate: Date;
+    plannedReturnDate: Date;
+    items: Array<{ itemId: string; quantity: number; item: { name: string; totalQuantity: number } }>;
+  },
+) {
+  for (const entry of request.items) {
+    const reserved = await tx.borrowingRequestItem.aggregate({
+      where: {
+        itemId: entry.itemId,
+        borrowingRequestId: { not: request.id },
+        borrowingRequest: {
+          status: { in: [...reservationStatuses] },
+          borrowDate: { lte: request.plannedReturnDate },
+          plannedReturnDate: { gte: request.borrowDate },
+        },
+      },
+      _sum: { quantity: true },
+    });
+    const reservedQuantity = reserved._sum.quantity ?? 0;
+    if (!hasScheduleCapacity(entry.item.totalQuantity, entry.quantity, reservedQuantity)) {
+      throw new WorkflowError(`${entry.item.name} sudah dialokasikan untuk jadwal yang bertumpang tindih`);
+    }
+  }
+}
 
 export function authorizeTransition(
   from: BorrowingStatus,
@@ -120,12 +163,8 @@ export async function transitionBorrowingRequest(
       if (request.borrowDate > request.plannedReturnDate) throw new WorkflowError("Rentang tanggal peminjaman tidak valid");
     }
 
-    if (to === BorrowingStatus.WAITING_SEKDA_APPROVAL) {
-      for (const entry of request.items) {
-        if (entry.item.status !== ItemStatus.AVAILABLE || entry.item.availableQuantity < entry.quantity) {
-          throw new WorkflowError(`Stok ${entry.item.name} tidak mencukupi`);
-        }
-      }
+    if (to === BorrowingStatus.WAITING_SEKDA_APPROVAL || to === BorrowingStatus.APPROVED) {
+      await assertScheduleAvailability(tx, request);
     }
 
     if (shouldCreateApprovalRecord(request.status, to)) {
@@ -230,6 +269,59 @@ export type ReturnPhotoInput = {
   size?: number;
 };
 
+export async function resubmitBorrowingRequest(
+  requestId: string,
+  actor: SessionUser,
+  input: {
+    purpose: string;
+    activityLocation: string;
+    borrowDate: Date;
+    plannedReturnDate: Date;
+    ktpFile: string;
+    approvalLetterFile: string;
+    items: Array<{ itemId: string; quantity: number; initialCondition: ItemCondition }>;
+    context?: RequestContext;
+  },
+) {
+  assertRole(actor, [Role.BORROWER]);
+  return db.$transaction(async (tx) => {
+    const request = await tx.borrowingRequest.findUnique({ where: { id: requestId } });
+    if (!request) throw new WorkflowError("Permohonan peminjaman tidak ditemukan");
+    assertSameSKPD(actor, request.skpdId);
+    assertOwner(actor, request.borrowerId);
+    authorizeTransition(request.status, BorrowingStatus.WAITING_ADMIN_VERIFICATION, actor.role);
+    const now = new Date();
+    const updated = await tx.borrowingRequest.update({
+      where: { id: request.id },
+      data: {
+        purpose: input.purpose,
+        activityLocation: input.activityLocation,
+        borrowDate: input.borrowDate,
+        plannedReturnDate: input.plannedReturnDate,
+        ktpFile: input.ktpFile,
+        approvalLetterFile: input.approvalLetterFile,
+        status: BorrowingStatus.WAITING_ADMIN_VERIFICATION,
+        submittedAt: now,
+        verifiedAt: null,
+        adminNote: null,
+        items: {
+          deleteMany: {},
+          create: input.items,
+        },
+      },
+    });
+    await writeAudit(tx, actor, {
+      action: AuditAction.TRANSITION,
+      module: "BORROWING",
+      objectType: "BorrowingRequest",
+      objectId: request.id,
+      previousValue: { status: request.status, adminNote: request.adminNote },
+      newValue: { status: BorrowingStatus.WAITING_ADMIN_VERIFICATION, resubmittedAt: now },
+    }, input.context);
+    return updated;
+  });
+}
+
 export async function submitReturn(
   requestId: string,
   actor: SessionUser,
@@ -320,10 +412,13 @@ export async function verifyReturn(
     issueType?: ReturnIssueType;
     issueDescription?: string;
     followUpRecommendation?: string;
+    resolutionNote?: string;
+    serviceableReturnConfirmed?: boolean;
     context?: RequestContext;
   },
 ) {
   assertRole(actor, [Role.ADMIN]);
+  const resolvingProblem = input.serviceableReturnConfirmed === true;
   const to = input.result === ReturnVerificationResult.ACCEPTED
     ? BorrowingStatus.COMPLETED
     : BorrowingStatus.RETURN_PROBLEM;
@@ -336,13 +431,22 @@ export async function verifyReturn(
   ) {
     throw new WorkflowError("Hasil ACCEPTED mensyaratkan kendaraan lengkap, utuh, dan berfungsi");
   }
+  if (resolvingProblem && (!input.resolutionNote || input.resolutionNote.trim().length < 10)) {
+    throw new WorkflowError("Catatan penyelesaian minimal 10 karakter");
+  }
   return db.$transaction(async (tx) => {
     const request = await tx.borrowingRequest.findUnique({
       where: { id: requestId },
-      include: { items: true },
+      include: { items: true, returnVerification: true },
     });
     if (!request) throw new WorkflowError("Permohonan peminjaman tidak ditemukan");
-    authorizeTransition(request.status, to, actor.role, input.issueDescription);
+    if (request.status === BorrowingStatus.RETURN_PROBLEM && !resolvingProblem) {
+      throw new WorkflowError("Konfirmasi kendaraan layak digunakan kembali wajib diberikan");
+    }
+    if (request.status !== BorrowingStatus.RETURN_PROBLEM && resolvingProblem) {
+      throw new WorkflowError("Konfirmasi penyelesaian hanya berlaku untuk pengembalian bermasalah");
+    }
+    authorizeTransition(request.status, to, actor.role, resolvingProblem ? input.resolutionNote : input.issueDescription);
     const now = new Date();
     const verificationData = {
       itemComplete: input.itemComplete,
@@ -354,11 +458,26 @@ export async function verifyReturn(
       issueDescription: input.issueDescription,
       followUpRecommendation: input.followUpRecommendation,
     };
-    const verification = await tx.returnVerification.upsert({
-      where: { borrowingRequestId: request.id },
-      update: { ...verificationData, verifierId: actor.id, verifiedAt: now },
-      create: { ...verificationData, borrowingRequestId: request.id, verifierId: actor.id, verifiedAt: now },
-    });
+    const verification = resolvingProblem && request.returnVerification
+      ? await tx.returnVerification.update({
+          where: { borrowingRequestId: request.id },
+          data: {
+            itemComplete: input.itemComplete,
+            accessoriesComplete: input.accessoriesComplete,
+            physicallyIntact: input.physicallyIntact,
+            functioningProperly: input.functioningProperly,
+            verifierId: actor.id,
+            resolutionNote: input.resolutionNote?.trim(),
+            resolvedAt: now,
+            serviceableReturnConfirmed: true,
+            verifiedAt: now,
+          },
+        })
+      : await tx.returnVerification.upsert({
+          where: { borrowingRequestId: request.id },
+          update: { ...verificationData, verifierId: actor.id, verifiedAt: now },
+          create: { ...verificationData, borrowingRequestId: request.id, verifierId: actor.id, verifiedAt: now },
+        });
     if (to === BorrowingStatus.COMPLETED) {
       for (const entry of request.items) {
         await tx.item.update({
@@ -368,12 +487,12 @@ export async function verifyReturn(
       }
     }
     await tx.returnSubmission.updateMany({
-      where: { borrowingRequestId: request.id, status: ReturnSubmissionStatus.SUBMITTED },
+      where: { borrowingRequestId: request.id, status: { in: resolvingProblem ? [ReturnSubmissionStatus.SUBMITTED, ReturnSubmissionStatus.PROBLEM] : [ReturnSubmissionStatus.SUBMITTED] } },
       data: { status: to === BorrowingStatus.COMPLETED ? ReturnSubmissionStatus.VERIFIED : ReturnSubmissionStatus.PROBLEM, verifiedAt: now },
     });
     await tx.borrowingRequest.update({
       where: { id: request.id },
-      data: { status: to, completedAt: to === BorrowingStatus.COMPLETED ? now : undefined, adminNote: input.issueDescription },
+      data: { status: to, completedAt: to === BorrowingStatus.COMPLETED ? now : undefined, adminNote: resolvingProblem ? input.resolutionNote?.trim() : input.issueDescription },
     });
     await writeAudit(tx, actor, {
       action: AuditAction.TRANSITION,
@@ -381,7 +500,7 @@ export async function verifyReturn(
       objectType: "BorrowingRequest",
       objectId: request.id,
       previousValue: { status: request.status },
-      newValue: { status: to, returnVerificationId: verification.id },
+      newValue: { status: to, returnVerificationId: verification.id, resolutionNote: input.resolutionNote },
     }, input.context);
     return verification;
   });
@@ -391,12 +510,13 @@ export async function markOverdueRequests(actor: SessionUser, now = new Date()):
   assertRole(actor, [Role.ADMIN]);
   const requests = await db.borrowingRequest.findMany({
     where: { status: BorrowingStatus.BORROWED, plannedReturnDate: { lt: now } },
-    select: { id: true },
+    select: { id: true, borrowerId: true, registrationNumber: true },
   });
   for (const request of requests) {
     await transitionBorrowingRequest(request.id, BorrowingStatus.OVERDUE, actor, {
       note: `Ditandai terlambat otomatis pada ${now.toISOString()}`,
     });
+    await db.notification.create({ data: { userId: request.borrowerId, type: NotificationType.WARNING, title: "Pengembalian kendaraan terlambat", message: `${request.registrationNumber} telah melewati batas pengembalian. Segera ajukan pengembalian.`, link: `/peminjam/pengembalian/${request.id}` } });
   }
   return requests.length;
 }

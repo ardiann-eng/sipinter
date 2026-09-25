@@ -1,5 +1,5 @@
 import type { Item, ItemCategory } from "@prisma/client";
-import type { InventoryItem } from "./mock-data";
+import type { InventoryItem } from "./view-models";
 
 type InventoryRecord = Item & { category?: ItemCategory };
 

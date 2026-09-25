@@ -152,23 +152,23 @@ model ItemCategory {
 }
 
 model Item {
-  id                String        @id @default(cuid())
-  itemCode          String        @unique
-  registrationNumber String?      @unique
-  name              String
-  categoryId        String
-  location          String
-  skpdId            String
-  unit              String
-  totalQuantity     Int
-  availableQuantity Int
-  condition         ItemCondition
-  status            ItemStatus    @default(AVAILABLE)
-  procurementYear   Int
-  description       String?
-  mainPhoto         String?
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
+  id                 String        @id @default(cuid())
+  itemCode           String        @unique
+  registrationNumber String?       @unique
+  name               String
+  categoryId         String
+  location           String
+  skpdId             String
+  unit               String
+  totalQuantity      Int
+  availableQuantity  Int
+  condition          ItemCondition
+  status             ItemStatus    @default(AVAILABLE)
+  procurementYear    Int
+  description        String?
+  mainPhoto          String?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
 
   category     ItemCategory           @relation(fields: [categoryId], references: [id], onDelete: Restrict)
   skpd         SKPD                   @relation(fields: [skpdId], references: [id], onDelete: Restrict)
@@ -303,20 +303,23 @@ model ReturnPhoto {
 }
 
 model ReturnVerification {
-  id                     String                   @id @default(cuid())
-  borrowingRequestId     String                   @unique
-  verifierId             String
-  itemComplete           Boolean
-  accessoriesComplete    Boolean
-  physicallyIntact       Boolean
-  functioningProperly    Boolean
-  result                 ReturnVerificationResult
-  issueType              ReturnIssueType?
-  issueDescription       String?
-  followUpRecommendation String?
-  verifiedAt             DateTime                 @default(now())
-  createdAt              DateTime                 @default(now())
-  updatedAt              DateTime                 @updatedAt
+  id                         String                   @id @default(cuid())
+  borrowingRequestId         String                   @unique
+  verifierId                 String
+  itemComplete               Boolean
+  accessoriesComplete        Boolean
+  physicallyIntact           Boolean
+  functioningProperly        Boolean
+  result                     ReturnVerificationResult
+  issueType                  ReturnIssueType?
+  issueDescription           String?
+  followUpRecommendation     String?
+  resolutionNote             String?
+  resolvedAt                 DateTime?
+  serviceableReturnConfirmed Boolean                  @default(false)
+  verifiedAt                 DateTime                 @default(now())
+  createdAt                  DateTime                 @default(now())
+  updatedAt                  DateTime                 @updatedAt
 
   borrowingRequest BorrowingRequest @relation(fields: [borrowingRequestId], references: [id], onDelete: Restrict)
   verifier         User             @relation(fields: [verifierId], references: [id], onDelete: Restrict)
