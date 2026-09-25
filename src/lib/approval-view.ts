@@ -26,7 +26,7 @@ export function toApprovalView(request: ApprovalRequest) {
     duration: `${Math.max(1, Math.ceil((request.plannedReturnDate.getTime() - request.borrowDate.getTime()) / 86_400_000) + 1)} hari`,
     items: request.items.map((entry) => ({ name: entry.item.name, code: entry.item.itemCode, quantity: entry.quantity, unit: entry.item.unit })),
     admin: "Administrator SIPINTER",
-    adminNote: request.adminNote ?? "Dokumen dan ketersediaan inventaris telah diverifikasi.",
+    adminNote: request.adminNote ?? "Dokumen, kapasitas penumpang, dan ketersediaan kendaraan telah diverifikasi.",
     status,
     decidedAt: decision ? formatDateTime(decision.decidedAt) : undefined,
     decisionNote: decision?.note ?? request.approverNote ?? undefined,

@@ -13,7 +13,7 @@ export default async function PendingApprovalsPage() {
   const requests = await db.borrowingRequest.findMany({ where: { status: BorrowingStatus.WAITING_SEKDA_APPROVAL }, include: { borrower: { include: { skpd: true } }, items: { include: { item: true } }, approvalRecords: true }, orderBy: { verifiedAt: "asc" } });
   const records = requests.map(toApprovalView);
   return <div className="sekda-page">
-    <PageHeader eyebrow="Meja persetujuan Sekretaris Daerah" title="Menunggu Persetujuan" description="Telaah dan putuskan permohonan fasilitas yang telah lolos verifikasi administrator." />
+    <PageHeader eyebrow="Meja persetujuan Sekretaris Daerah" title="Menunggu Persetujuan" description="Telaah dan putuskan permohonan kendaraan dinas yang telah lolos verifikasi administrator." />
     <section className="approval-summary" aria-label="Ringkasan persetujuan">
        <div><Clock3 /><span><strong>{records.length}</strong>Menunggu keputusan</span></div>
        <div><AlertCircle /><span><strong>{records.filter((record) => record.startDate === new Intl.DateTimeFormat("id-ID", { day: "numeric", month: "short", year: "numeric" }).format(new Date())).length}</strong>Perlu diputus hari ini</span></div>

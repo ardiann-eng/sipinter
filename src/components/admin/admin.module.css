@@ -193,6 +193,33 @@
   color: var(--text-muted);
   font-size: 12px;
 }
+.vehicleCell {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+  min-width: 230px;
+}
+.vehicleCell > div {
+  min-width: 0;
+}
+.vehicleThumb {
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  flex: 0 0 auto;
+  height: 48px;
+  object-fit: cover;
+  width: 72px;
+}
+.vehicleHero {
+  aspect-ratio: 16 / 8;
+  border-radius: var(--radius-md);
+  margin-bottom: 18px;
+  overflow: hidden;
+  position: relative;
+}
+.vehicleHero img {
+  object-fit: cover;
+}
 .link {
   align-items: center;
   color: var(--blue-700);

@@ -4,8 +4,8 @@ import { PageHeader, Panel } from "@/components";
 import { s } from "@/components/admin/admin-ui";
 
 const modules = [
-  { href: "/admin/penyerahan", label: "Penyerahan Barang", detail: "Konfirmasi barang keluar dan bukti serah terima.", icon: PackageCheck },
-  { href: "/admin/pengembalian", label: "Verifikasi Pengembalian", detail: "Periksa kondisi, fungsi, dan kelengkapan barang.", icon: RotateCcw },
+  { href: "/admin/penyerahan", label: "Penyerahan Kendaraan", detail: "Konfirmasi kendaraan keluar dan bukti serah terima.", icon: PackageCheck },
+  { href: "/admin/pengembalian", label: "Verifikasi Pengembalian", detail: "Periksa kondisi, fungsi, dan kelengkapan kendaraan.", icon: RotateCcw },
   { href: "/admin/pengguna", label: "Manajemen Pengguna", detail: "Kelola akun, SKPD, peran, dan status akses.", icon: Users },
   { href: "/admin/audit", label: "Audit Aktivitas", detail: "Telusuri perubahan dan tindakan penting sistem.", icon: Activity },
   { href: "/admin/pengaturan", label: "Pengaturan", detail: "Atur parameter operasional dan keamanan.", icon: Settings },

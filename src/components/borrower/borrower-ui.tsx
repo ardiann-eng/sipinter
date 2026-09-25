@@ -71,7 +71,7 @@ export function RequestList({
               <TableHeader>Nomor</TableHeader>
               <TableHeader>Keperluan</TableHeader>
               <TableHeader>Periode</TableHeader>
-              <TableHeader>Barang</TableHeader>
+              <TableHeader>Kendaraan</TableHeader>
               <TableHeader>Status</TableHeader>
               <TableHeader />
             </TableRow>
@@ -133,8 +133,8 @@ export function RequestList({
                 value: `${formatDate(request.startDate, "dd MMM")} - ${formatDate(request.endDate, "dd MMM yyyy")}`,
               },
               {
-                label: "Barang",
-                value: `${request.items.reduce((sum, item) => sum + item.quantity, 0)} unit`,
+                label: "Kendaraan",
+                value: `${request.items.reduce((sum, item) => sum + item.quantity, 0)} kendaraan`,
               },
             ]}
             actions={

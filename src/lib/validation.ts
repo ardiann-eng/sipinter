@@ -45,8 +45,8 @@ export const profileContactSchema = z.object({
 });
 
 export const itemSchema = z.object({
-  itemCode: requiredText("Kode barang", 64).regex(/^[A-Za-z0-9./_-]+$/),
-  name: requiredText("Nama barang"),
+  itemCode: requiredText("Kode kendaraan", 64).regex(/^[A-Za-z0-9./_-]+$/),
+  name: requiredText("Nama kendaraan"),
   categoryId: id,
   location: requiredText("Lokasi", 255),
   skpdId: id,
@@ -59,7 +59,7 @@ export const itemSchema = z.object({
   description: optionalText(),
   mainPhoto: optionalText(500),
 }).refine((value) => value.availableQuantity <= value.totalQuantity, {
-  message: "Stok tersedia tidak boleh melebihi jumlah barang",
+  message: "Jumlah kendaraan tersedia tidak boleh melebihi total kendaraan",
   path: ["availableQuantity"],
 });
 

@@ -323,7 +323,7 @@ function Brand({ href }: { href: string }) {
       </span>
       <span className="brand__text">
         <strong>SIPINTER</strong>
-        <small>Sistem Informasi Peminjaman Inventaris Kantor Terintegrasi</small>
+        <small>Sistem Informasi Peminjaman Kendaraan Dinas</small>
         <em>Pemkot Makassar</em>
       </span>
     </Link>

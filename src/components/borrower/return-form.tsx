@@ -8,8 +8,8 @@ import styles from "./borrower.module.css";
 const evidenceLabels = [
   "Foto tampak depan",
   "Foto tampak belakang",
-  "Foto nomor inventaris",
-  "Foto kelengkapan barang",
+  "Foto nomor polisi kendaraan",
+  "Foto kabin dan kelengkapan kendaraan",
 ] as const;
 const allowedPhotoTypes = ["image/jpeg", "image/png"];
 
@@ -32,7 +32,7 @@ export function ReturnForm({ requestId, number, itemCount }: { requestId: string
     if (!condition) next.condition = "Kondisi akhir wajib dipilih.";
     if (!returnedAt) next.returnedAt = "Tanggal pengembalian wajib diisi.";
     if (files.length < 2 || files.length > 4)
-      next.photos = "Unggah 2-4 foto bukti kondisi barang.";
+      next.photos = "Unggah 2-4 foto bukti kondisi kendaraan.";
     files.forEach((file) => {
       if (!allowedPhotoTypes.includes(file.type))
         next.photos = "Foto harus berformat JPG atau PNG.";
@@ -60,17 +60,17 @@ export function ReturnForm({ requestId, number, itemCount }: { requestId: string
     <div className={styles.page}>
       {sent && (
         <div className={styles.success} role="status" aria-live="polite">
-          Pengembalian berhasil diajukan. Simpan barang sampai petugas
+          Pengembalian berhasil diajukan. Simpan kendaraan di lokasi yang disepakati sampai petugas
           menyelesaikan verifikasi.
         </div>
       )}
       <Panel
         title="Kondisi pengembalian"
-        description={`Bukti untuk ${itemCount} jenis barang pada ${number}`}
+        description={`Bukti untuk ${itemCount} kendaraan pada ${number}`}
       >
         <div className={styles.formGrid}>
           <Select
-            label="Kondisi akhir barang"
+            label="Kondisi akhir kendaraan"
             required
             value={condition}
             onChange={(event) => {

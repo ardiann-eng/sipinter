@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import {
   CalendarDays,
   Check,
@@ -38,7 +39,7 @@ const initialDraft: Draft = {
 const steps = [
   "Data peminjam",
   "Kegiatan",
-  "Pilih barang",
+  "Pilih kendaraan",
   "Dokumen",
   "Tinjau",
 ];
@@ -112,7 +113,7 @@ export function LoanForm({
       currentStep === 2 &&
       !Object.values(draft.items).some((quantity) => quantity > 0)
     )
-      next.items = "Pilih sedikitnya satu barang.";
+      next.items = "Pilih sedikitnya satu kendaraan.";
     if (currentStep === 3) {
       next.ktp = validateFile(ktp, "KTP");
       next.supporting = validateFile(supporting, "Dokumen pendukung");
@@ -313,13 +314,17 @@ export function LoanForm({
                   id="note"
                   value={draft.note}
                   onChange={(event) => update("note", event.target.value)}
-                  placeholder="Informasi teknis atau waktu pengambilan barang (opsional)"
+                  placeholder="Jumlah penumpang, kebutuhan pengemudi, atau waktu keberangkatan (opsional)"
                 />
               </div>
             </div>
           )}
           {step === 2 && (
             <div className={styles.catalog}>
+              <div className={styles.catalogIntro}>
+                <strong>Pilih berdasarkan kapasitas penumpang</strong>
+                <span>Setiap kartu mewakili satu unit kendaraan. Nomor polisi membedakan unit dengan kapasitas yang sama.</span>
+              </div>
               {catalog.map((item) => {
                 const quantity = draft.items[item.id] ?? 0;
                 return (
@@ -330,12 +335,18 @@ export function LoanForm({
                     )}
                     key={item.id}
                   >
-                    <div>
+                    {item.imageUrl ? (
+                      <div className={styles.catalogImage}>
+                        <Image src={item.imageUrl} alt={`${item.name} ${item.registrationNumber}`} fill sizes="(max-width: 640px) 100vw, 176px" />
+                      </div>
+                    ) : (
+                      <div className={styles.catalogImageFallback} aria-hidden="true">Kendaraan</div>
+                    )}
+                    <div className={styles.catalogCopy}>
                       <strong>{item.name}</strong>
-                      <small>
-                        {item.code} · tersedia {item.availableStock} {item.unit}{" "}
-                        · {item.location}
-                      </small>
+                      <small>{item.registrationNumber} · {item.code}</small>
+                      {item.description && <p>{item.description}</p>}
+                      <span>{item.availableStock > 0 ? "Tersedia" : "Tidak tersedia"} · {item.location}</span>
                     </div>
                     <div className={styles.quantityControl}>
                       <button
@@ -426,7 +437,7 @@ export function LoanForm({
                   <strong>{draft.location || "Belum diisi"}</strong>
                 </div>
                 <div>
-                  <span>Barang</span>
+                  <span>Kendaraan</span>
                   <strong>
                     {selected
                       .map((item) => `${item.name} (${draft.items[item.id]})`)
@@ -451,7 +462,7 @@ export function LoanForm({
                 />
                 <span>
                   Saya menyatakan data dan dokumen yang disampaikan benar,
-                  fasilitas digunakan hanya untuk kepentingan kedinasan, serta
+                  kendaraan digunakan hanya untuk kepentingan kedinasan, serta
                   bersedia bertanggung jawab atas penggunaan dan
                   pengembaliannya.
                 </span>
@@ -492,13 +503,13 @@ export function LoanForm({
         {step > 1 && (
           <aside className={styles.draftSummary}>
             <span>RINGKASAN DRAF</span>
-            <strong>{selectedQuantity} unit fasilitas</strong>
+            <strong>{selectedQuantity} kendaraan</strong>
             <p>
               {selected.length
                 ? selected
                     .map((item) => `${item.name} (${draft.items[item.id]})`)
                     .join(", ")
-                : "Belum ada fasilitas dipilih."}
+                : "Belum ada kendaraan dipilih."}
             </p>
             {draft.startDate && (
               <small>

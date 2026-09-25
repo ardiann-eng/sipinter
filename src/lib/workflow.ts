@@ -111,7 +111,7 @@ export async function transitionBorrowingRequest(
     assertOwner(actor, request.borrowerId);
 
     if (to === BorrowingStatus.WAITING_ADMIN_VERIFICATION) {
-      if (!request.items.length) throw new WorkflowError("Permohonan wajib memiliki minimal satu barang");
+      if (!request.items.length) throw new WorkflowError("Permohonan wajib memiliki minimal satu kendaraan");
       if (!request.ktpFile || !request.approvalLetterFile) {
         throw new WorkflowError("ktpFile dan approvalLetterFile wajib diunggah sebelum pengajuan");
       }
@@ -180,7 +180,7 @@ export async function transitionBorrowingRequest(
         throw new WorkflowError("serviceableReturnConfirmed wajib untuk menyelesaikan RETURN_PROBLEM");
       }
       if (!request.returnVerification || !canRestoreStock(request.returnVerification, resolvedProblem && options.serviceableReturnConfirmed)) {
-        throw new WorkflowError("Barang belum terbukti kembali lengkap, utuh, dan berfungsi");
+        throw new WorkflowError("Kendaraan belum terbukti kembali lengkap, utuh, dan berfungsi");
       }
       for (const entry of request.items) {
         await tx.item.update({
@@ -322,7 +322,7 @@ export async function verifyReturn(
     input.result === ReturnVerificationResult.ACCEPTED &&
     (!input.itemComplete || !input.physicallyIntact || !input.functioningProperly)
   ) {
-    throw new WorkflowError("Hasil ACCEPTED mensyaratkan barang lengkap, utuh, dan berfungsi");
+    throw new WorkflowError("Hasil ACCEPTED mensyaratkan kendaraan lengkap, utuh, dan berfungsi");
   }
   return db.$transaction(async (tx) => {
     const request = await tx.borrowingRequest.findUnique({

@@ -87,10 +87,10 @@ function LoginContent() {
           <p className={styles.kicker}>LAYANAN INTERNAL PEMERINTAHAN</p>
           <h1 id="brand-title">SIPINTER</h1>
           <p className={styles.fullName}>
-            Sistem Informasi Peminjaman Inventaris Kantor Terintegrasi
+            Sistem Informasi Peminjaman Kendaraan Dinas
           </p>
           <p className={styles.statement}>
-            Peminjaman fasilitas pemerintah yang tertib, transparan, dan dapat
+            Peminjaman kendaraan dinas yang tertib, transparan, dan dapat
             ditelusuri.
           </p>
         </div>

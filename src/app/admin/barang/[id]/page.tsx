@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import Image from "next/image";
 import { History, Pencil, QrCode } from "lucide-react";
 import {
   AdminHeader,
@@ -29,13 +30,18 @@ export default async function ItemDetailPage({
         description={`${item.code} · ${item.registrationNumber}`}
         actions={
           <LinkButton href={`/admin/barang/${item.id}/edit`}>
-            <Pencil size={16} /> Edit barang
+            <Pencil size={16} /> Edit kendaraan
           </LinkButton>
         }
       />
       <div className={s.grid7030}>
         <div className={s.stack}>
-          <Panel title="Identitas aset" action={<Status value={item.status} />}>
+          <Panel title="Identitas kendaraan" action={<Status value={item.status} />}>
+            {item.imageUrl && (
+              <div className={s.vehicleHero}>
+                <Image src={item.imageUrl} alt={`${item.name} ${item.registrationNumber}`} fill sizes="(max-width: 900px) 100vw, 720px" priority />
+              </div>
+            )}
             <DetailGrid>
               <DetailItem label="Kategori">{item.category}</DetailItem>
               <DetailItem label="Merek / model">
@@ -57,7 +63,7 @@ export default async function ItemDetailPage({
               <DetailItem label="Lokasi">{item.location}</DetailItem>
               <DetailItem wide label="Deskripsi">
                 {item.description ??
-                  "Fasilitas operasional Pemerintah Kota Makassar."}
+                  "Kendaraan operasional Pemerintah Kota Makassar."}
               </DetailItem>
             </DetailGrid>
           </Panel>
@@ -79,7 +85,7 @@ export default async function ItemDetailPage({
               </li>
               <li>
                 <p>
-                  <strong>Pemeriksaan berkala</strong> oleh pengurus barang.
+                  <strong>Pemeriksaan berkala</strong> oleh pengelola kendaraan.
                   Tidak ada temuan.
                 </p>
                 <time>2 Juli 2026, 10.15 WITA</time>
@@ -88,7 +94,7 @@ export default async function ItemDetailPage({
           </Panel>
         </div>
         <aside className={s.stack}>
-          <Panel title="Stok terkini">
+          <Panel title="Ketersediaan terkini">
             <div className={s.summaryItem}>
               <span>Tersedia</span>
               <strong>
@@ -99,7 +105,7 @@ export default async function ItemDetailPage({
               </small>
             </div>
           </Panel>
-          <Panel title="Label inventaris">
+          <Panel title="Label kendaraan">
             <div className={s.photo}>
               <div>
                 <QrCode size={82} />

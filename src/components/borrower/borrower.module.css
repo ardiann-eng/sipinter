@@ -326,6 +326,16 @@
   font-size: 11px;
   margin-top: 3px;
 }
+.facilityImage {
+  border-radius: 9px;
+  flex: 0 0 64px;
+  height: 44px;
+  overflow: hidden;
+  position: relative;
+}
+.facilityImage img {
+  object-fit: cover;
+}
 .facilityList header > div {
   min-width: 0;
 }
@@ -528,9 +538,19 @@
   border-radius: 12px;
   display: grid;
   gap: 12px;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: auto 1fr auto;
   min-height: 58px;
   padding: 12px 14px;
+}
+.itemRowImage {
+  border-radius: 8px;
+  height: 48px;
+  overflow: hidden;
+  position: relative;
+  width: 72px;
+}
+.itemRowImage img {
+  object-fit: cover;
 }
 .itemRow strong {
   display: block;
@@ -742,15 +762,32 @@
   display: grid;
   gap: 10px;
 }
+.catalogIntro {
+  background: var(--surface-soft);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  display: grid;
+  gap: 3px;
+  padding: 13px 15px;
+}
+.catalogIntro strong {
+  color: var(--primary-deep);
+  font-size: 13px;
+}
+.catalogIntro span {
+  color: var(--muted);
+  font-size: 12px;
+}
 .catalogItem {
   align-items: center;
   border: 1px solid var(--line);
   border-radius: 12px;
   display: grid;
   gap: 16px;
-  grid-template-columns: 1fr auto;
-  min-height: 72px;
-  padding: 13px 15px;
+  grid-template-columns: 176px minmax(0, 1fr) auto;
+  min-height: 126px;
+  overflow: hidden;
+  padding: 10px;
   transition:
     border-color 120ms var(--ease),
     box-shadow 120ms var(--ease);
@@ -764,8 +801,38 @@
   color: var(--primary-deep);
   display: block;
 }
-.catalogItem small {
+.catalogItem small,
+.catalogCopy span {
   color: var(--muted);
+  display: block;
+  font-size: 12px;
+}
+.catalogImage,
+.catalogImageFallback {
+  aspect-ratio: 16 / 10;
+  background: var(--surface-soft);
+  border-radius: 9px;
+  overflow: hidden;
+  position: relative;
+}
+.catalogImage img {
+  object-fit: cover;
+}
+.catalogImageFallback {
+  align-items: center;
+  color: var(--muted);
+  display: flex;
+  font-size: 12px;
+  justify-content: center;
+}
+.catalogCopy {
+  min-width: 0;
+}
+.catalogCopy p {
+  color: var(--ink);
+  font-size: 12px;
+  line-height: 1.45;
+  margin: 7px 0;
 }
 .quantityControl {
   align-items: center;
@@ -1022,6 +1089,17 @@
   }
   .catalogItem {
     grid-template-columns: 1fr;
+  }
+  .itemRow {
+    grid-template-columns: auto 1fr;
+  }
+  .itemRow > :last-child {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+  .catalogImage,
+  .catalogImageFallback {
+    aspect-ratio: 16 / 9;
   }
   .quantityControl {
     justify-self: start;

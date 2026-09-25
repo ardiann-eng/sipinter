@@ -66,7 +66,7 @@ export default async function BorrowerHomePage() {
             Selamat datang, <strong>{user.name}.</strong>
           </h1>
           <p className={styles.welcomeLead}>
-            Kelola peminjaman fasilitas kedinasan dalam satu tempat.
+            Kelola peminjaman kendaraan dinas dalam satu tempat.
           </p>
           <div className={styles.actions}>
             <Link
@@ -106,7 +106,7 @@ export default async function BorrowerHomePage() {
               <strong>{formatDate(active.startDate, "dd MMM yyyy")}</strong>
             </div>
             <div>
-              <span>Barang</span>
+              <span>Kendaraan</span>
               <strong>{active.items.length} jenis</strong>
             </div>
             <div>
@@ -157,7 +157,7 @@ export default async function BorrowerHomePage() {
           <h2>{borrowed.items[0].itemName}</h2>
           <p>{borrowed.number}</p>
           <span>
-            Siapkan barang lengkap dan foto kondisi akhir sebelum batas waktu.
+            Siapkan kendaraan dan foto kondisi akhir sebelum batas waktu.
           </span>
           <Link
             className={`${styles.linkButton} ${styles.linkSecondary}`}
@@ -196,27 +196,31 @@ export default async function BorrowerHomePage() {
         <section className={`${styles.facilityList} ${styles.span12}`}>
           <header>
             <div>
-              <p className={styles.sectionEyebrow}>KATALOG FASILITAS</p>
-              <h2>Fasilitas tersedia</h2>
-              <span>Stok dapat berubah setelah verifikasi pengajuan.</span>
+              <p className={styles.sectionEyebrow}>KATALOG KENDARAAN</p>
+              <h2>Kendaraan tersedia</h2>
+              <span>Pilih kapasitas yang sesuai dengan jumlah penumpang.</span>
             </div>
             <Link
               className={`${styles.linkButton} ${styles.linkOutline}`}
               href="/peminjam/ajukan"
             >
-              Pilih barang <ArrowRight size={16} />
+              Pilih kendaraan <ArrowRight size={16} />
             </Link>
           </header>
           <div className={styles.available}>
             {availableItems.map((item) => (
               <div className={styles.facilityItem} key={item.id}>
-                <span className={styles.itemIcon}>
-                  <Box size={18} />
-                </span>
+                {item.imageUrl ? (
+                  <span className={styles.facilityImage}>
+                    <Image src={item.imageUrl} alt="" fill sizes="64px" />
+                  </span>
+                ) : (
+                  <span className={styles.itemIcon}><Box size={18} /></span>
+                )}
                 <div>
                   <strong>{item.name}</strong>
                   <small>
-                    {item.category} · {item.location}
+                    {item.registrationNumber} · {item.model}
                   </small>
                 </div>
                 <Badge tone="success">

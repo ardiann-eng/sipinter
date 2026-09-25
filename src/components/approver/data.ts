@@ -38,13 +38,10 @@ export const pendingApprovals: ApprovalRecord[] = [
     endDate: "22 Juli 2026, 16.30 WITA",
     duration: "1 hari",
     items: [
-      { name: "Kursi Lipat Chitose", code: "MEU-KRS-00082", quantity: 30, unit: "buah" },
-      { name: "Portable Sound System TOA", code: "AUD-SPK-00031", quantity: 1, unit: "set" },
-      { name: "Proyektor Epson EB-E01", code: "ELK-PRO-00047", quantity: 1, unit: "unit" },
-      { name: "Layar Proyektor 100 inci", code: "ELK-LYR-00018", quantity: 1, unit: "unit" },
+      { name: "Bus Penumpang 30 Seat · DD 7003 AD", code: "KDR-BUS-7003AD", quantity: 1, unit: "kendaraan" },
     ],
     admin: "Syarifuddin, S.E.",
-    adminNote: "Identitas pemohon, surat tugas, jadwal ruang, serta ketersediaan barang telah diverifikasi. Sound system kembali dari kegiatan sebelumnya pada 21 Juli 2026 pukul 17.00 WITA dan dijadwalkan pemeriksaan sebelum penyerahan.",
+    adminNote: "Identitas pemohon, surat tugas, jadwal perjalanan, kapasitas penumpang, dan ketersediaan Bus DD 7003 AD telah diverifikasi.",
     status: "MENUNGGU",
   },
   {
@@ -54,7 +51,7 @@ export const pendingApprovals: ApprovalRecord[] = [
     nip: "198905172014032006",
     unit: "Bidang Kesehatan Masyarakat",
     skpd: "Dinas Kesehatan Kota Makassar",
-    purpose: "Dukungan sarana kegiatan Gerakan Masyarakat Hidup Sehat tingkat Kota Makassar",
+    purpose: "Transportasi peserta Gerakan Masyarakat Hidup Sehat tingkat Kota Makassar",
     location: "Anjungan Pantai Losari",
     submittedAt: "17 Juli 2026, 10.42 WITA",
     verifiedAt: "17 Juli 2026, 15.20 WITA",
@@ -62,11 +59,10 @@ export const pendingApprovals: ApprovalRecord[] = [
     endDate: "25 Juli 2026, 12.00 WITA",
     duration: "1 hari",
     items: [
-      { name: "Tenda Kerucut 3 x 3 Meter", code: "TND-RPT-00061", quantity: 8, unit: "unit" },
-      { name: "Meja Lipat", code: "MEU-MJA-00044", quantity: 12, unit: "buah" },
+      { name: "Bus Penumpang 25 Seat · DD 7106 A", code: "KDR-BUS-7106A", quantity: 1, unit: "kendaraan" },
     ],
     admin: "Syarifuddin, S.E.",
-    adminNote: "Surat permohonan dan susunan acara lengkap. Delapan tenda pengganti telah dipastikan dalam kondisi baik oleh pengurus barang.",
+    adminNote: "Surat permohonan dan susunan acara lengkap. Bus DD 7106 A telah dipastikan tersedia dan dalam kondisi baik oleh pengelola kendaraan.",
     status: "MENUNGGU",
   },
   {
@@ -83,7 +79,7 @@ export const pendingApprovals: ApprovalRecord[] = [
     startDate: "23 Juli 2026, 07.30 WITA",
     endDate: "24 Juli 2026, 17.00 WITA",
     duration: "2 hari",
-    items: [{ name: "Toyota HiAce Premio", code: "TRN-MBL-00009", quantity: 1, unit: "unit" }],
+    items: [{ name: "HiAce Premio · DD 7215 RF", code: "KDR-HAP-7215RF", quantity: 1, unit: "kendaraan" }],
     admin: "Hasanuddin, S.A.P.",
     adminNote: "Surat tugas tim tersedia. Kendaraan dan pengemudi telah dikonfirmasi oleh Bagian Umum.",
     status: "MENUNGGU",
@@ -95,7 +91,7 @@ export const pendingApprovals: ApprovalRecord[] = [
     nip: "199405212022031009",
     unit: "Bidang Aplikasi dan Informatika",
     skpd: "Dinas Komunikasi dan Informatika Kota Makassar",
-    purpose: "Bimbingan teknis operator layanan persuratan elektronik perangkat daerah",
+    purpose: "Transportasi operator layanan persuratan elektronik perangkat daerah",
     location: "Makassar Government Center, Jalan Slamet Riyadi",
     submittedAt: "18 Juli 2026, 08.02 WITA",
     verifiedAt: "18 Juli 2026, 10.26 WITA",
@@ -103,20 +99,19 @@ export const pendingApprovals: ApprovalRecord[] = [
     endDate: "28 Juli 2026, 16.00 WITA",
     duration: "2 hari",
     items: [
-      { name: "Laptop Lenovo ThinkPad E14", code: "ELK-LPT-00128", quantity: 5, unit: "unit" },
-      { name: "Proyektor Epson EB-E01", code: "ELK-PRO-00047", quantity: 2, unit: "unit" },
+      { name: "HiAce 16 Seat · DD 7122 A", code: "KDR-HAC-7122A", quantity: 1, unit: "kendaraan" },
     ],
     admin: "Hasanuddin, S.A.P.",
-    adminNote: "Dokumen kegiatan lengkap. Stok telah dicadangkan dan tidak berbenturan dengan jadwal peminjaman lain.",
+    adminNote: "Dokumen kegiatan lengkap. Kendaraan telah dicadangkan dan tidak berbenturan dengan jadwal peminjaman lain.",
     status: "MENUNGGU",
   },
 ];
 
 export const approvalHistory: ApprovalRecord[] = [
-  { ...pendingApprovals[0], id: "borrow-008", number: "SIPINTER/PMK/VII/2026/00121", requester: "Fitriani, S.E.", skpd: "Badan Perencanaan Pembangunan Daerah Kota Makassar", unit: "Bidang Perencanaan Makro", purpose: "Forum konsultasi publik rancangan perubahan RKPD", decidedAt: "15 Juli 2026, 13.42 WITA", decisionNote: "Disetujui sesuai hasil verifikasi administrasi dan ketersediaan fasilitas.", status: "DISETUJUI" },
-  { ...pendingApprovals[1], id: "borrow-009", number: "SIPINTER/PMK/VII/2026/00116", requester: "Arman Saleh, S.Sos.", skpd: "Dinas Pemuda dan Olahraga Kota Makassar", unit: "Bidang Pembudayaan Olahraga", purpose: "Kegiatan olahraga bersama komunitas tingkat kecamatan", decidedAt: "12 Juli 2026, 10.06 WITA", decisionNote: "Jadwal penggunaan tenda berbenturan dengan agenda resmi Pemerintah Kota. Ajukan kembali dengan tanggal alternatif.", status: "DITOLAK" },
+  { ...pendingApprovals[0], id: "borrow-008", number: "SIPINTER/PMK/VII/2026/00121", requester: "Fitriani, S.E.", skpd: "Badan Perencanaan Pembangunan Daerah Kota Makassar", unit: "Bidang Perencanaan Makro", purpose: "Transportasi forum konsultasi publik rancangan perubahan RKPD", decidedAt: "15 Juli 2026, 13.42 WITA", decisionNote: "Disetujui sesuai hasil verifikasi administrasi dan ketersediaan kendaraan.", status: "DISETUJUI" },
+  { ...pendingApprovals[1], id: "borrow-009", number: "SIPINTER/PMK/VII/2026/00116", requester: "Arman Saleh, S.Sos.", skpd: "Dinas Pemuda dan Olahraga Kota Makassar", unit: "Bidang Pembudayaan Olahraga", purpose: "Transportasi peserta kegiatan olahraga tingkat kecamatan", decidedAt: "12 Juli 2026, 10.06 WITA", decisionNote: "Jadwal kendaraan berbenturan dengan agenda resmi Pemerintah Kota. Ajukan kembali dengan tanggal alternatif.", status: "DITOLAK" },
   { ...pendingApprovals[2], id: "borrow-010", number: "SIPINTER/PMK/VII/2026/00112", requester: "Nur Alam, S.T.", skpd: "Dinas Pekerjaan Umum Kota Makassar", unit: "Sekretariat", purpose: "Peninjauan lapangan pekerjaan drainase kawasan Manggala", decidedAt: "10 Juli 2026, 16.18 WITA", decisionNote: "Disetujui untuk mendukung pelaksanaan tugas kedinasan.", status: "DISETUJUI" },
-  { ...pendingApprovals[3], id: "borrow-011", number: "SIPINTER/PMK/VII/2026/00108", requester: "Sri Wahyuni, S.E.", skpd: "Badan Keuangan dan Aset Daerah Kota Makassar", unit: "Bidang Aset", purpose: "Rekonsiliasi data barang milik daerah semester I", decidedAt: "8 Juli 2026, 09.34 WITA", decisionNote: "Disetujui dengan kewajiban pengembalian pada hari yang sama.", status: "DISETUJUI" },
+  { ...pendingApprovals[3], id: "borrow-011", number: "SIPINTER/PMK/VII/2026/00108", requester: "Sri Wahyuni, S.E.", skpd: "Badan Keuangan dan Aset Daerah Kota Makassar", unit: "Bidang Aset", purpose: "Transportasi tim rekonsiliasi aset semester I", decidedAt: "8 Juli 2026, 09.34 WITA", decisionNote: "Disetujui dengan kewajiban pengembalian kendaraan pada hari yang sama.", status: "DISETUJUI" },
 ];
 
 export const allApprovals = [...pendingApprovals, ...approvalHistory];

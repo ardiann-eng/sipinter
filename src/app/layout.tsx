@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     template: "%s | SIPINTER",
   },
   description:
-    "Sistem Informasi Peminjaman Inventaris Kantor Terintegrasi Pemerintah Kota Makassar",
+    "Sistem Informasi Peminjaman Kendaraan Dinas Pemerintah Kota Makassar",
   icons: {
     icon: [{ url: cityLogo.src, type: "image/png" }],
   },

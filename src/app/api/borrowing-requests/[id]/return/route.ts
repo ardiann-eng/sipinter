@@ -34,7 +34,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       context: { ipAddress: request.headers.get("x-forwarded-for"), userAgent: request.headers.get("user-agent") },
     });
     const admins = await db.user.findMany({ where: { role: Role.ADMIN, status: "ACTIVE", skpdId: actor.skpdId }, select: { id: true } });
-    if (admins.length) await db.notification.createMany({ data: admins.map((admin) => ({ userId: admin.id, type: NotificationType.ACTION_REQUIRED, title: "Pengembalian perlu diverifikasi", message: "Peminjam telah mengirim bukti kondisi akhir inventaris.", link: `/admin/pengembalian/${id}` })) });
+    if (admins.length) await db.notification.createMany({ data: admins.map((admin) => ({ userId: admin.id, type: NotificationType.ACTION_REQUIRED, title: "Pengembalian perlu diverifikasi", message: "Peminjam telah mengirim bukti kondisi akhir kendaraan.", link: `/admin/pengembalian/${id}` })) });
     return NextResponse.json({ id: submission.id }, { status: 201 });
   } catch (error) {
     return NextResponse.json({ error: error instanceof Error ? error.message : "Pengembalian belum dapat diproses." }, { status: 400 });

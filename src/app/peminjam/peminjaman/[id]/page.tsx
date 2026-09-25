@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowLeft, FileText } from "lucide-react";
 import {
   Badge,
@@ -12,6 +13,7 @@ import {
 import { findBorrowerRequest } from "@/components/borrower/borrower-data";
 import { StatusBadge } from "@/components/borrower/borrower-ui";
 import { formatDate, formatDateTime } from "@/lib/format";
+import { inventoryItems } from "@/lib/mock-data";
 import styles from "@/components/borrower/borrower.module.css";
 
 export default async function BorrowingDetailPage({
@@ -51,8 +53,8 @@ export default async function BorrowingDetailPage({
       }
     : returnable
       ? {
-          title: "Fasilitas perlu dikembalikan",
-          description: `Ajukan pengembalian paling lambat ${formatDate(request.endDate)}. Siapkan foto kondisi seluruh barang.`,
+          title: "Kendaraan perlu dikembalikan",
+          description: `Ajukan pengembalian paling lambat ${formatDate(request.endDate)}. Siapkan foto eksterior, interior, dan nomor polisi kendaraan.`,
           label: "Ajukan pengembalian",
           href: `/peminjam/pengembalian/${request.id}`,
         }
@@ -151,19 +153,21 @@ export default async function BorrowingDetailPage({
         </Panel>
         <Panel
           className={styles.span8}
-          title="Barang dipinjam"
-          description={`${request.items.length} jenis barang`}
+          title="Kendaraan dipinjam"
+          description={`${request.items.length} kendaraan`}
         >
           <div className={styles.itemRows}>
-            {request.items.map((item) => (
-              <div className={styles.itemRow} key={item.itemId}>
+            {request.items.map((item) => {
+              const vehicle = inventoryItems.find((entry) => entry.id === item.itemId);
+              return <div className={styles.itemRow} key={item.itemId}>
+                {vehicle?.imageUrl && <span className={styles.itemRowImage}><Image src={vehicle.imageUrl} alt="" fill sizes="72px" /></span>}
                 <div>
                   <strong>{item.itemName}</strong>
-                  <small>ID barang: {item.itemId}</small>
+                  <small>{vehicle?.registrationNumber ?? `ID kendaraan: ${item.itemId}`}</small>
                 </div>
-                <Badge tone="info">{item.quantity} unit</Badge>
-              </div>
-            ))}
+                <Badge tone="info">{item.quantity} kendaraan</Badge>
+              </div>;
+            })}
           </div>
         </Panel>
         <Panel className={styles.span4} title="Dokumen pengajuan">

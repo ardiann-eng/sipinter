@@ -180,104 +180,130 @@ async function main() {
     users.set(account.role, user);
   }
 
-  const electronics = await prisma.itemCategory.upsert({
-    where: { code: "ELEKTRONIK" },
-    update: {},
-    create: { code: "ELEKTRONIK", name: "Elektronik" },
+  const vehicles = await prisma.itemCategory.upsert({
+    where: { code: "KENDARAAN" },
+    update: { name: "Kendaraan Dinas" },
+    create: { code: "KENDARAAN", name: "Kendaraan Dinas" },
   });
   const items = [
     {
-      itemCode: "ELK-LPT-00128",
-      name: "Laptop Lenovo ThinkPad E14",
-      unit: "unit",
-      totalQuantity: 12,
-      availableQuantity: 7,
-      location: "Gudang Fasilitas Balai Kota",
-      condition: ItemCondition.GOOD,
-      status: "AVAILABLE" as const,
-      procurementYear: 2025,
-    },
-    {
-      itemCode: "ELK-PRO-00047",
-      name: "Proyektor Epson EB-E01",
-      unit: "unit",
-      totalQuantity: 8,
-      availableQuantity: 4,
-      location: "Gudang Fasilitas Balai Kota",
-      condition: ItemCondition.GOOD,
-      status: "AVAILABLE" as const,
-      procurementYear: 2024,
-    },
-    {
-      itemCode: "MEU-KRS-00082",
-      name: "Kursi Lipat Chitose",
-      unit: "buah",
-      totalQuantity: 100,
-      availableQuantity: 65,
-      location: "Gudang Perlengkapan Balaikota",
-      condition: ItemCondition.GOOD,
-      status: "AVAILABLE" as const,
-      procurementYear: 2023,
-    },
-    {
-      itemCode: "AUD-SPK-00031",
-      name: "Portable Sound System",
-      unit: "set",
-      totalQuantity: 5,
-      availableQuantity: 0,
-      location: "Gudang Fasilitas Balai Kota",
-      condition: ItemCondition.GOOD,
-      status: "OUT_OF_STOCK" as const,
-      procurementYear: 2024,
-    },
-    {
-      itemCode: "TRN-MBL-00009",
-      name: "Toyota HiAce Premio",
-      unit: "unit",
-      totalQuantity: 2,
+      legacyItemCode: "ELK-LPT-00128",
+      itemCode: "KDR-BUS-7106A",
+      name: "Bus Penumpang 25 Seat",
+      unit: "kendaraan",
+      totalQuantity: 1,
       availableQuantity: 1,
       location: "Pool Kendaraan Balaikota",
-      condition: ItemCondition.LIGHTLY_DAMAGED,
+      condition: ItemCondition.GOOD,
       status: "AVAILABLE" as const,
       procurementYear: 2022,
+      mainPhoto: "/kendaraan/bus-25-seat-dd-7106-a.jpg",
+      description: "Bus dinas DD 7106 A dengan kapasitas maksimal 25 penumpang.",
     },
     {
-      itemCode: "TND-RPT-00056",
-      name: "Tenda Kerucut 3 x 3 Meter",
-      unit: "unit",
-      totalQuantity: 20,
-      availableQuantity: 0,
-      location: "Gudang Perlengkapan Balaikota",
-      condition: ItemCondition.HEAVILY_DAMAGED,
-      status: "INACTIVE" as const,
+      legacyItemCode: "ELK-PRO-00047",
+      itemCode: "KDR-BUS-7003AD",
+      name: "Bus Penumpang 30 Seat",
+      unit: "kendaraan",
+      totalQuantity: 1,
+      availableQuantity: 1,
+      location: "Pool Kendaraan Balaikota",
+      condition: ItemCondition.GOOD,
+      status: "AVAILABLE" as const,
+      procurementYear: 2021,
+      mainPhoto: "/kendaraan/bus-30-seat-dd-7003-ad.jpg",
+      description: "Bus dinas DD 7003 AD dengan kapasitas maksimal 30 penumpang.",
+    },
+    {
+      legacyItemCode: "MEU-KRS-00082",
+      itemCode: "KDR-BUS-7013RV",
+      name: "Bus Penumpang 25 Seat",
+      unit: "kendaraan",
+      totalQuantity: 1,
+      availableQuantity: 1,
+      location: "Pool Kendaraan Balaikota",
+      condition: ItemCondition.GOOD,
+      status: "AVAILABLE" as const,
       procurementYear: 2023,
+      mainPhoto: "/kendaraan/bus-25-seat-dd-7013-rv.jpg",
+      description: "Bus dinas DD 7013 RV dengan kapasitas maksimal 25 penumpang.",
     },
     {
-      itemCode: "ELK-LYR-00018",
-      name: "Layar Proyektor 100 inci",
-      unit: "unit",
-      totalQuantity: 6,
-      availableQuantity: 6,
-      location: "Gudang Fasilitas Balai Kota",
+      legacyItemCode: "AUD-SPK-00031",
+      itemCode: "KDR-HAC-7122A",
+      name: "HiAce 16 Seat",
+      unit: "kendaraan",
+      totalQuantity: 1,
+      availableQuantity: 1,
+      location: "Pool Kendaraan Balaikota",
       condition: ItemCondition.GOOD,
       status: "AVAILABLE" as const,
       procurementYear: 2024,
+      mainPhoto: "/kendaraan/hiace-16-seat-dd-7122-a.jpg",
+      description: "Toyota HiAce DD 7122 A dengan kapasitas maksimal 16 penumpang.",
+    },
+    {
+      legacyItemCode: "TRN-MBL-00009",
+      itemCode: "KDR-HAP-7215RF",
+      name: "HiAce Premio",
+      unit: "kendaraan",
+      totalQuantity: 1,
+      availableQuantity: 1,
+      location: "Pool Kendaraan Balaikota",
+      condition: ItemCondition.GOOD,
+      status: "AVAILABLE" as const,
+      procurementYear: 2022,
+      mainPhoto: "/kendaraan/hiace-premio-dd-7215-rf.jpg",
+      description: "Toyota HiAce Premio DD 7215 RF untuk perjalanan dinas.",
+    },
+    {
+      legacyItemCode: "TND-RPT-00056",
+      itemCode: "KDR-HAC-7001TF",
+      name: "HiAce 12 Seat",
+      unit: "kendaraan",
+      totalQuantity: 1,
+      availableQuantity: 1,
+      location: "Pool Kendaraan Balaikota",
+      condition: ItemCondition.GOOD,
+      status: "AVAILABLE" as const,
+      procurementYear: 2023,
+      mainPhoto: "/kendaraan/hiace-12-seat-dd-7001-tf.jpg",
+      description: "Toyota HiAce DD 7001 TF dengan kapasitas maksimal 12 penumpang.",
     },
   ];
   const seededItems = [];
   for (const entry of items) {
+    const { legacyItemCode, ...vehicle } = entry;
+    const existing =
+      (await prisma.item.findUnique({ where: { itemCode: vehicle.itemCode } })) ??
+      (await prisma.item.findUnique({ where: { itemCode: legacyItemCode } }));
+    const data = {
+      ...vehicle,
+      categoryId: vehicles.id,
+      skpdId: setda.id,
+    };
     seededItems.push(
-      await prisma.item.upsert({
-        where: { itemCode: entry.itemCode },
-        update: {},
-        create: {
-          ...entry,
-          categoryId: electronics.id,
-          skpdId: setda.id,
-        },
-      }),
+      existing
+        ? await prisma.item.update({ where: { id: existing.id }, data })
+        : await prisma.item.create({ data }),
     );
   }
+  await prisma.item.updateMany({
+    where: {
+      itemCode: {
+        in: [
+          "ELK-LPT-00128",
+          "ELK-PRO-00047",
+          "MEU-KRS-00082",
+          "AUD-SPK-00031",
+          "TRN-MBL-00009",
+          "TND-RPT-00056",
+          "ELK-LYR-00018",
+        ],
+      },
+    },
+    data: { status: "INACTIVE", availableQuantity: 0 },
+  });
 
   const borrower = users.get(Role.BORROWER);
   if (!borrower) throw new Error("Akun pegawai seed gagal dibuat");
@@ -308,10 +334,10 @@ async function main() {
 
   const notificationSeeds = [
     { role: Role.BORROWER, type: NotificationType.ACTION_REQUIRED, title: "Perbaiki dokumen pengajuan", message: "Surat tugas untuk SIPINTER/PMK/VII/2026/00110 perlu ditandatangani pimpinan sebelum dapat diproses.", link: "/peminjam/peminjaman/borrow-007" },
-    { role: Role.BORROWER, type: NotificationType.WARNING, title: "Pengembalian jatuh tempo besok", message: "Laptop Lenovo ThinkPad E14 perlu dikembalikan beserta bukti foto kondisi akhir.", link: "/peminjam/pengembalian/borrow-005" },
+    { role: Role.BORROWER, type: NotificationType.WARNING, title: "Pengembalian jatuh tempo besok", message: "Bus Penumpang 25 Seat perlu dikembalikan beserta bukti foto kondisi akhir kendaraan.", link: "/peminjam/pengembalian/borrow-005" },
     { role: Role.BORROWER, type: NotificationType.WAITING, title: "Pengajuan sedang diverifikasi", message: "Petugas sedang memeriksa kelengkapan dokumen pengajuan Anda.", link: "/peminjam/peminjaman/borrow-001" },
     { role: Role.ADMIN, type: NotificationType.WARNING, title: "2 pengajuan mendekati batas layanan", message: "Dua permohonan belum diverifikasi dan akan melewati target layanan hari ini.", link: "/admin/verifikasi" },
-    { role: Role.ADMIN, type: NotificationType.ACTION_REQUIRED, title: "3 pengembalian perlu diverifikasi", message: "Bukti foto dan kondisi akhir inventaris menunggu pemeriksaan petugas.", link: "/admin/pengembalian" },
+    { role: Role.ADMIN, type: NotificationType.ACTION_REQUIRED, title: "3 pengembalian perlu diverifikasi", message: "Bukti foto dan kondisi akhir kendaraan menunggu pemeriksaan petugas.", link: "/admin/pengembalian" },
     { role: Role.ADMIN, type: NotificationType.WAITING, title: "4 pengajuan menunggu persetujuan Sekda", message: "Verifikasi administrasi telah selesai dan keputusan pimpinan masih diperlukan.", link: "/admin/verifikasi" },
     { role: Role.APPROVER, type: NotificationType.ACTION_REQUIRED, title: "4 keputusan menunggu persetujuan", message: "Permohonan telah diverifikasi administrator dan membutuhkan keputusan Anda.", link: "/sekda/menunggu" },
     { role: Role.APPROVER, type: NotificationType.WARNING, title: "Pengembalian terlambat perlu perhatian", message: "Satu peminjaman melewati batas waktu pengembalian lebih dari 24 jam.", link: "/sekda/laporan" },
@@ -329,7 +355,7 @@ async function main() {
   }
 
   console.info(
-    "Seed SIPINTER selesai: SKPD, tiga akun demo, barang, dan SIPINTER/PMK/VII/2026/00128 dibuat.",
+    "Seed SIPINTER selesai: SKPD, tiga akun demo, kendaraan, dan SIPINTER/PMK/VII/2026/00128 dibuat.",
   );
 }
 

@@ -24,7 +24,7 @@ export default async function VerificationPage() {
     <>
       <AdminHeader
         title="Verifikasi peminjaman"
-        description="Periksa kelengkapan, kesesuaian kebutuhan, dan ketersediaan barang sebelum diteruskan kepada Sekretaris Daerah."
+        description="Periksa dokumen perjalanan, kapasitas penumpang, dan ketersediaan kendaraan sebelum diteruskan kepada Sekretaris Daerah."
       />
       <section className={s.summaryStrip} aria-label="Ringkasan antrean">
         <div className={s.summaryItem}>

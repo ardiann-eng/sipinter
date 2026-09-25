@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import {
   CheckCircle2,
   ChevronRight,
@@ -140,7 +141,7 @@ export function RequestTable({
               <TableRow key={r.id}>
                 <TableCell>
                   <strong className={s.mono}>{r.number}</strong>
-                  <div className={s.compact}>{r.itemCount} jenis barang</div>
+                  <div className={s.compact}>{r.itemCount} jenis kendaraan</div>
                 </TableCell>
                 <TableCell>
                   <strong>{r.borrowerName}</strong>
@@ -181,7 +182,7 @@ export function RequestTable({
                 value: `${formatDate(r.startDate, "dd MMM")} - ${formatDate(r.endDate, "dd MMM")}`,
               },
               { label: "Keperluan", value: r.purpose },
-              { label: "Barang", value: `${r.itemCount} jenis` },
+              { label: "Kendaraan", value: `${r.itemCount} jenis` },
             ]}
             actions={
               <LinkButton href={href(r.id)} secondary>
@@ -203,7 +204,7 @@ export function ItemTable({ items }: { items: InventoryItem[] }) {
           <TableHead>
             <TableRow>
               <TableHeader>Kode / Registrasi</TableHeader>
-              <TableHeader>Barang</TableHeader>
+              <TableHeader>Kendaraan</TableHeader>
               <TableHeader>Stok</TableHeader>
               <TableHeader>Kondisi</TableHeader>
               <TableHeader>Lokasi</TableHeader>
@@ -218,9 +219,16 @@ export function ItemTable({ items }: { items: InventoryItem[] }) {
                   <div className={s.compact}>{item.registrationNumber}</div>
                 </TableCell>
                 <TableCell>
-                  <strong>{item.name}</strong>
-                  <div className={s.compact}>
-                    {item.category} · {item.brand}
+                  <div className={s.vehicleCell}>
+                    {item.imageUrl && (
+                      <Image className={s.vehicleThumb} src={item.imageUrl} alt="" width={72} height={48} />
+                    )}
+                    <div>
+                      <strong>{item.name}</strong>
+                      <div className={s.compact}>
+                        {item.registrationNumber} · {item.model ?? item.brand}
+                      </div>
+                    </div>
                   </div>
                 </TableCell>
                 <TableCell>
@@ -294,37 +302,33 @@ export function InventoryForm({ item }: { item?: InventoryItem }) {
   return (
     <form className={s.stack}>
       <Panel
-        title="Identitas barang"
+        title="Identitas kendaraan"
         description="Kolom bertanda bintang wajib diisi."
       >
         <div className={s.formGrid}>
           <label className="field">
-            <span className="field__label">Nama barang *</span>
+            <span className="field__label">Nama kendaraan *</span>
             <input
               className="input"
               defaultValue={item?.name}
-              placeholder="Contoh: Kamera Sony Alpha A7 IV"
+              placeholder="Contoh: Bus Penumpang 25 Seat"
             />
           </label>
           <label className="field">
             <span className="field__label">Kategori *</span>
             <select
               className="select"
-              defaultValue={item?.category ?? "Perangkat Komputer"}
+              defaultValue={item?.category ?? "Kendaraan Dinas"}
             >
-              <option>Perangkat Komputer</option>
-              <option>Peralatan Presentasi</option>
-              <option>Peralatan Audio</option>
-              <option>Meubelair</option>
               <option>Kendaraan Dinas</option>
             </select>
           </label>
           <label className="field">
-            <span className="field__label">Kode barang *</span>
+            <span className="field__label">Kode kendaraan *</span>
             <input
               className="input"
               defaultValue={item?.code}
-              placeholder="ELK-KMR-00001"
+              placeholder="KDR-BUS-00001"
             />
           </label>
           <label className="field">
@@ -332,7 +336,7 @@ export function InventoryForm({ item }: { item?: InventoryItem }) {
             <input
               className="input"
               defaultValue={item?.registrationNumber}
-              placeholder="SIPINTER/PMK/VII/2026/00150"
+              placeholder="DD 0000 XX"
             />
           </label>
           <label className="field">
@@ -345,10 +349,10 @@ export function InventoryForm({ item }: { item?: InventoryItem }) {
           </label>
         </div>
       </Panel>
-      <Panel title="Stok dan penempatan">
+      <Panel title="Ketersediaan dan penempatan">
         <div className={s.formGrid}>
           <label className="field">
-            <span className="field__label">Jumlah unit *</span>
+            <span className="field__label">Jumlah kendaraan *</span>
             <input
               className="input"
               type="number"
@@ -358,7 +362,7 @@ export function InventoryForm({ item }: { item?: InventoryItem }) {
           </label>
           <label className="field">
             <span className="field__label">Satuan *</span>
-            <input className="input" defaultValue={item?.unit ?? "unit"} />
+            <input className="input" defaultValue={item?.unit ?? "kendaraan"} />
           </label>
           <label className="field">
             <span className="field__label">Kondisi awal *</span>
@@ -372,7 +376,7 @@ export function InventoryForm({ item }: { item?: InventoryItem }) {
             <span className="field__label">Lokasi penyimpanan *</span>
             <input
               className="input"
-              defaultValue={item?.location ?? "Gudang Fasilitas Balai Kota"}
+              defaultValue={item?.location ?? "Pool Kendaraan Balaikota"}
             />
           </label>
           <label className="field">
@@ -401,7 +405,7 @@ export function InventoryForm({ item }: { item?: InventoryItem }) {
         <LinkButton href="/admin/barang" secondary>
           Batal
         </LinkButton>
-        <Button type="submit">Simpan data barang</Button>
+        <Button type="submit">Simpan data kendaraan</Button>
       </div>
     </form>
   );
@@ -457,7 +461,7 @@ export function FormalReportPreview() {
           </div>
         </div>
       </header>
-      <h2>Laporan Penggunaan Fasilitas</h2>
+      <h2>Laporan Penggunaan Kendaraan Dinas</h2>
       <p className={s.compact} style={{ textAlign: "center" }}>
         Periode 1 - 31 Juli 2026 · Nomor: 028/417/BAG.UMUM/VII/2026
       </p>

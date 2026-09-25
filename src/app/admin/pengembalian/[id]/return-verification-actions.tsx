@@ -32,9 +32,9 @@ export function ReturnVerificationActions({ requestId }: { requestId: string }) 
     <div className="checklist">
       {([
         ["itemComplete", "Unit sesuai data peminjaman"],
-        ["accessoriesComplete", "Kelengkapan barang tersedia"],
+        ["accessoriesComplete", "Kunci dan dokumen kendaraan lengkap"],
         ["physicallyIntact", "Kondisi fisik utuh"],
-        ["functioningProperly", "Barang berfungsi dengan baik"],
+        ["functioningProperly", "Kendaraan berfungsi dengan baik"],
       ] as const).map(([key, label]) => <label key={key} className="check-item"><input type="checkbox" checked={checks[key]} onChange={(event) => setChecks((current) => ({ ...current, [key]: event.target.checked }))} />{label}</label>)}
     </div>
     <Select label="Hasil pemeriksaan" value={result} onChange={(event) => setResult(event.target.value as typeof result)}><option value="ACCEPTED">Diterima dan selesai</option><option value="PROBLEM">Ada masalah</option></Select>

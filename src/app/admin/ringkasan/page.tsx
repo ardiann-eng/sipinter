@@ -43,7 +43,7 @@ export default function RingkasanPage() {
         <div className={s.summaryItem}>
           <span>Peminjaman aktif</span>
           <strong>{dashboardSummary.activeBorrowings}</strong>
-          <small>41 unit di luar gudang</small>
+          <small>3 kendaraan sedang digunakan</small>
         </div>
         <div className={s.summaryItem}>
           <span>Pengembalian terlambat</span>
@@ -51,9 +51,9 @@ export default function RingkasanPage() {
           <small>Lewat lebih dari 24 jam</small>
         </div>
         <div className={s.summaryItem}>
-          <span>Ketersediaan barang</span>
-          <strong>98 / 147</strong>
-          <small>66,7% dapat dipinjam</small>
+          <span>Ketersediaan kendaraan</span>
+          <strong>{dashboardSummary.availableItems} / {dashboardSummary.totalItems}</strong>
+          <small>Seluruh unit terpantau</small>
         </div>
       </section>
       <div className={s.grid7030}>
@@ -69,42 +69,42 @@ export default function RingkasanPage() {
         >
           <RequestTable requests={inventoryRequests.slice(0, 3)} />
         </Panel>
-        <Panel title="Kondisi inventaris" description="147 unit tercatat">
+        <Panel title="Kondisi kendaraan" description="6 kendaraan tercatat">
           <div className={s.condition}>
             <div>
               <span>Baik</span>
-              <strong>132</strong>
-              <small>89,8%</small>
+              <strong>6</strong>
+              <small>100%</small>
             </div>
             <div>
               <span>Rusak ringan</span>
-              <strong>8</strong>
-              <small>5,4%</small>
+              <strong>0</strong>
+              <small>0%</small>
             </div>
             <div>
               <span>Rusak berat</span>
-              <strong>6</strong>
-              <small>4,1%</small>
+              <strong>0</strong>
+              <small>0%</small>
             </div>
             <div>
               <span>Hilang</span>
-              <strong>1</strong>
-              <small>0,7%</small>
+              <strong>0</strong>
+              <small>0%</small>
             </div>
           </div>
           <div
             className={`${s.note} ${s.dangerNote}`}
             style={{ marginTop: 16 }}
           >
-            <AlertTriangle size={16} /> Tenda kerucut membutuhkan keputusan
-            penghapusan aset.
+            <AlertTriangle size={16} /> Tidak ada kendaraan yang memerlukan
+            tindak lanjut kondisi saat ini.
           </div>
         </Panel>
       </div>
       <div className={s.grid2}>
         <Panel
           title="Kalender operasional · Juli 2026"
-          description="Penyerahan, penggunaan, dan pengembalian fasilitas."
+          description="Penyerahan, penggunaan, dan pengembalian kendaraan."
         >
           <div className={s.calendar}>
             {["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"].map((d) => (
@@ -161,7 +161,7 @@ export default function RingkasanPage() {
         <ul className={s.activity}>
           <li>
             <p>
-              <strong>Syarifuddin</strong> mencatat pengembalian proyektor Epson
+              <strong>Syarifuddin</strong> mencatat pengembalian HiAce 12 Seat
               dalam kondisi baik.
             </p>
             <time>18 Juli 2026, 08.41 WITA</time>
@@ -175,8 +175,8 @@ export default function RingkasanPage() {
           </li>
           <li>
             <p>
-              <strong>Sekretaris Daerah</strong> menyetujui fasilitas rapat
-              koordinasi perangkat daerah.
+              <strong>Sekretaris Daerah</strong> menyetujui Bus Penumpang 30 Seat
+              untuk rapat koordinasi perangkat daerah.
             </p>
             <time>17 Juli 2026, 15.48 WITA</time>
           </li>
