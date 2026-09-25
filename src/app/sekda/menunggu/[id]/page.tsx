@@ -12,8 +12,8 @@ export default async function ApprovalDetailPage({ params }: { params: Promise<{
   const { id } = await params;
   await requireRole([Role.APPROVER]);
   const request = await db.borrowingRequest.findUnique({ where: { id }, include: { borrower: { include: { skpd: true } }, items: { include: { item: true } }, approvalRecords: true } });
-  const record = request ? toApprovalView(request) : null;
-  if (!record) notFound();
+  if (!request) notFound();
+  const record = toApprovalView(request);
   const pending = record.status === "MENUNGGU";
 
   return <div className="sekda-page">
@@ -28,7 +28,10 @@ export default async function ApprovalDetailPage({ params }: { params: Promise<{
           <DetailItem label="Tujuan kedinasan" wide>{record.purpose}</DetailItem><DetailItem label="Lokasi kegiatan" wide>{record.location}</DetailItem><DetailItem label="Mulai">{record.startDate}</DetailItem><DetailItem label="Selesai">{record.endDate}</DetailItem><DetailItem label="Durasi">{record.duration}</DetailItem><DetailItem label="Jumlah kendaraan">{record.items.length} kendaraan</DetailItem>
         </DetailGrid></Panel>
         <Panel title="Daftar kendaraan" description="Kapasitas dan ketersediaan telah dikonfirmasi administrator" action={<BusFront size={20} />} flush><div className="requested-items">{record.items.map((item, index) => <div key={item.code}><span>{index + 1}</span><p><strong>{item.name}</strong><small>{item.code}</small></p><b>{item.quantity} {item.unit}</b><Badge tone="success">Tersedia</Badge></div>)}</div></Panel>
-        <Panel title="Dokumen pendukung" description="Dokumen diterima bersama pengajuan" action={<FileCheck2 size={20} />}><div className="approval-documents"><DocumentPlaceholder name={`Surat_Permohonan_${record.number.split("/").at(-1)}.pdf`} type="pdf" size={842400} description="Surat permohonan resmi perangkat daerah" /><DocumentPlaceholder name="Surat_Tugas_Pelaksana.pdf" type="pdf" size={516800} description="Surat tugas tim pelaksana kegiatan" /><DocumentPlaceholder name="Jadwal_dan_Susunan_Acara.pdf" type="pdf" size={294100} description="Jadwal pelaksanaan kegiatan" /></div></Panel>
+        <Panel title="Dokumen pendukung" description="Dokumen diterima bersama pengajuan" action={<FileCheck2 size={20} />}><div className="approval-documents">
+          {request.ktpFile ? <DocumentPlaceholder name="Identitas peminjam" type="document" description="Dokumen identitas yang diunggah pemohon" href={`/api/uploads/${encodeURIComponent(request.ktpFile)}`} /> : <p>Dokumen identitas tidak tersedia.</p>}
+          {request.approvalLetterFile ? <DocumentPlaceholder name="Surat tugas / dokumen pendukung" type="document" description="Dokumen kedinasan yang diunggah pemohon" href={`/api/uploads/${encodeURIComponent(request.approvalLetterFile)}`} /> : <p>Surat tugas tidak tersedia.</p>}
+        </div></Panel>
         <Panel title="Catatan verifikasi administrator" action={<CheckCircle2 size={20} />}><div className="verification-note"><Badge tone="success" dot>Lengkap dan layak diteruskan</Badge><p>{record.adminNote}</p><footer><strong>{record.admin}</strong><span>Administrator SIPINTER</span><time>{record.verifiedAt}</time></footer></div></Panel>
         <Panel title="Riwayat proses"><Timeline items={[
           { id: "1", title: "Permohonan diajukan", description: `${record.requester} mengirim permohonan beserta dokumen pendukung.`, timestamp: record.submittedAt, state: "complete" },

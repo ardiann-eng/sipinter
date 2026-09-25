@@ -46,6 +46,10 @@ export const profileContactSchema = z.object({
 
 export const itemSchema = z.object({
   itemCode: requiredText("Kode kendaraan", 64).regex(/^[A-Za-z0-9./_-]+$/),
+  registrationNumber: requiredText("Nomor polisi", 32).regex(
+    /^[A-Za-z]{1,3}\s*\d{1,4}\s*[A-Za-z]{0,3}$/,
+    "Nomor polisi tidak valid",
+  ),
   name: requiredText("Nama kendaraan"),
   categoryId: id,
   location: requiredText("Lokasi", 255),

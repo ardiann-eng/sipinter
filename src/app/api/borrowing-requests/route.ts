@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { storage } from "@/lib/storage";
 import { borrowingRequestSchema } from "@/lib/validation";
 import { transitionBorrowingRequest } from "@/lib/workflow";
+import { apiErrorResponse } from "@/lib/api-response";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -16,16 +17,18 @@ function registrationNumber() {
 }
 
 export async function POST(request: NextRequest) {
-  const user = await requireRole([Role.BORROWER]);
-  const form = await request.formData();
-  const ktp = form.get("ktp");
-  const supporting = form.get("supporting");
-  if (!(ktp instanceof File) || !(supporting instanceof File)) {
-    return NextResponse.json({ error: "KTP dan dokumen pendukung wajib diunggah." }, { status: 400 });
-  }
-
+  let storedKeys: string[] = [];
+  let createdRequestId: string | undefined;
   try {
+    const user = await requireRole([Role.BORROWER]);
+    const form = await request.formData();
+    const ktp = form.get("ktp");
+    const supporting = form.get("supporting");
+    if (!(ktp instanceof File) || !(supporting instanceof File)) {
+      return NextResponse.json({ error: "KTP dan dokumen pendukung wajib diunggah." }, { status: 400 });
+    }
     const [ktpStored, supportingStored] = await Promise.all([storage.put(ktp), storage.put(supporting)]);
+    storedKeys = [ktpStored.key, supportingStored.key];
     const items = JSON.parse(String(form.get("items") ?? "[]")) as unknown;
     const parsed = borrowingRequestSchema.safeParse({
       purpose: form.get("purpose"),
@@ -57,6 +60,7 @@ export async function POST(request: NextRequest) {
       },
       select: { id: true },
     });
+    createdRequestId = record.id;
     await transitionBorrowingRequest(record.id, BorrowingStatus.WAITING_ADMIN_VERIFICATION, user, {
       context: { ipAddress: request.headers.get("x-forwarded-for"), userAgent: request.headers.get("user-agent") },
     });
@@ -81,7 +85,11 @@ export async function POST(request: NextRequest) {
     }
     return NextResponse.json({ id: record.id }, { status: 201 });
   } catch (error) {
+    if (createdRequestId) {
+      await db.borrowingRequest.delete({ where: { id: createdRequestId } }).catch(() => undefined);
+    }
+    await Promise.all(storedKeys.map((key) => storage.delete(key).catch(() => undefined)));
     console.error("Pengajuan peminjaman gagal", error);
-    return NextResponse.json({ error: error instanceof Error ? error.message : "Pengajuan belum dapat diproses." }, { status: 400 });
+    return apiErrorResponse(error, "Pengajuan belum dapat diproses.");
   }
 }

@@ -69,6 +69,7 @@ type TransitionOptions = {
 export function canRestoreStock(
   verification: {
     itemComplete: boolean;
+    accessoriesComplete: boolean;
     physicallyIntact: boolean;
     functioningProperly: boolean;
     result: ReturnVerificationResult;
@@ -78,6 +79,7 @@ export function canRestoreStock(
   return (
     verification.result === ReturnVerificationResult.ACCEPTED &&
     verification.itemComplete &&
+    verification.accessoriesComplete &&
     verification.physicallyIntact &&
     verification.functioningProperly
   ) || serviceableReturnConfirmed;
@@ -251,6 +253,16 @@ export async function submitReturn(
     if (request.status !== BorrowingStatus.BORROWED && request.status !== BorrowingStatus.OVERDUE) {
       throw new WorkflowError(`Pengembalian tidak dapat dimulai dari ${request.status}`);
     }
+    const borrowDay = new Date(request.borrowDate);
+    borrowDay.setUTCHours(0, 0, 0, 0);
+    const endOfToday = new Date();
+    endOfToday.setHours(23, 59, 59, 999);
+    if (input.actualReturnDate < borrowDay) {
+      throw new WorkflowError("Tanggal pengembalian tidak boleh sebelum tanggal peminjaman");
+    }
+    if (input.actualReturnDate > endOfToday) {
+      throw new WorkflowError("Tanggal pengembalian tidak boleh berada di masa depan");
+    }
     authorizeTransition(request.status, BorrowingStatus.WAITING_RETURN, actor.role, input.notes);
     await tx.borrowingRequest.update({
       where: { id: request.id },
@@ -320,7 +332,7 @@ export async function verifyReturn(
   }
   if (
     input.result === ReturnVerificationResult.ACCEPTED &&
-    (!input.itemComplete || !input.physicallyIntact || !input.functioningProperly)
+    (!input.itemComplete || !input.accessoriesComplete || !input.physicallyIntact || !input.functioningProperly)
   ) {
     throw new WorkflowError("Hasil ACCEPTED mensyaratkan kendaraan lengkap, utuh, dan berfungsi");
   }
@@ -330,7 +342,6 @@ export async function verifyReturn(
       include: { items: true },
     });
     if (!request) throw new WorkflowError("Permohonan peminjaman tidak ditemukan");
-    assertSameSKPD(actor, request.skpdId);
     authorizeTransition(request.status, to, actor.role, input.issueDescription);
     const now = new Date();
     const verificationData = {
@@ -379,7 +390,7 @@ export async function verifyReturn(
 export async function markOverdueRequests(actor: SessionUser, now = new Date()): Promise<number> {
   assertRole(actor, [Role.ADMIN]);
   const requests = await db.borrowingRequest.findMany({
-    where: { skpdId: actor.skpdId, status: BorrowingStatus.BORROWED, plannedReturnDate: { lt: now } },
+    where: { status: BorrowingStatus.BORROWED, plannedReturnDate: { lt: now } },
     select: { id: true },
   });
   for (const request of requests) {

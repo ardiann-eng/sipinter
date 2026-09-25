@@ -7,9 +7,9 @@ import { requireRole } from "@/lib/auth";
 import { db } from "@/lib/db";
 
 export default async function ReturnPage() {
-  const actor = await requireRole([Role.ADMIN]);
+  await requireRole([Role.ADMIN]);
   const requests = await db.borrowingRequest.findMany({
-    where: { skpdId: actor.skpdId, status: { in: [BorrowingStatus.WAITING_RETURN_VERIFICATION, BorrowingStatus.RETURN_PROBLEM] } },
+    where: { status: { in: [BorrowingStatus.WAITING_RETURN_VERIFICATION, BorrowingStatus.RETURN_PROBLEM] } },
     include: { borrower: { include: { skpd: true } }, items: true }, orderBy: { updatedAt: "asc" },
   });
   const waiting = requests.filter((request) => request.status === BorrowingStatus.WAITING_RETURN_VERIFICATION).length;

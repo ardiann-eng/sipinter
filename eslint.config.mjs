@@ -8,5 +8,5 @@ const compat = new FlatCompat({ baseDirectory });
 
 export default defineConfig([
   ...compat.extends("next/core-web-vitals", "next/typescript"),
-  globalIgnores([".next/**", ".next-build/**", "generated/**", "next-env.d.ts"]),
+  globalIgnores([".next/**", ".next-build/**", ".kilo/**", "generated/**", "next-env.d.ts"]),
 ]);

@@ -1,26 +1,13 @@
-import { Plus, UserCog } from "lucide-react";
-import { AdminHeader, Badge, Button, FilterBar, Panel, Select, Status, Table, TableBody, TableCell, TableContainer, TableHead, TableHeader, TableRow, formatDateTime, s } from "@/components/admin/admin-ui";
-import { users } from "@/lib/mock-data";
+import { Role, UserStatus } from "@prisma/client";
+import { AdminHeader, Badge, Panel, Status, Table, TableBody, TableCell, TableContainer, TableHead, TableHeader, TableRow, formatDateTime, s } from "@/components/admin/admin-ui";
+import { requireRole } from "@/lib/auth";
+import { db } from "@/lib/db";
 
-const roleLabel = { ADMIN: "ADMIN", BORROWER: "BORROWER", APPROVER: "APPROVER" } as const;
-
-export default function UsersPage() {
-  return <>
-    <AdminHeader title="Pengguna dan akses" description="Kelola akun aparatur, peran, perangkat daerah, dan status akses SIPINTER." actions={<Button><Plus size={16} /> Tambah pengguna</Button>} />
-    <section className={s.summaryStrip}>
-      <div className={s.summaryItem}><span>Total akun</span><strong>218</strong><small>216 akun ASN</small></div>
-      <div className={s.summaryItem}><span>Aktif</span><strong>204</strong><small>93,6% akun</small></div>
-      <div className={s.summaryItem}><span>Administrator</span><strong>4</strong><small>Bagian Umum</small></div>
-      <div className={s.summaryItem}><span>Sekda</span><strong>1</strong><small>Sekretariat Daerah</small></div>
-      <div className={s.summaryItem}><span>Belum masuk 30 hari</span><strong>14</strong><small>Perlu peninjauan</small></div>
-    </section>
-    <FilterBar searchPlaceholder="Cari nama, NIP, email, atau SKPD">
-      <Select aria-label="Peran"><option>Semua peran</option><option>ADMIN</option><option>BORROWER</option><option>APPROVER</option></Select>
-      <Select aria-label="Status"><option>Semua status</option><option>Aktif</option><option>Nonaktif</option></Select>
-      <Button variant="outline">Terapkan</Button>
-    </FilterBar>
-    <Panel title="Daftar pengguna" description="4 rekaman contoh dari 218 akun" flush>
-      <TableContainer><Table><TableHead><TableRow><TableHeader>Pengguna</TableHeader><TableHeader>NIP</TableHeader><TableHeader>Perangkat daerah</TableHeader><TableHeader>Peran</TableHeader><TableHeader>Terakhir aktif</TableHeader><TableHeader>Status / Aksi</TableHeader></TableRow></TableHead><TableBody>{users.map((u) => <TableRow key={u.id}><TableCell><strong>{u.name}</strong><div className={s.compact}>{u.email}</div></TableCell><TableCell className={s.mono}>{u.nip}</TableCell><TableCell>{u.skpd}<div className={s.compact}>{u.unit}</div></TableCell><TableCell><Badge tone={u.role === "ADMIN" ? "maroon" : u.role === "APPROVER" ? "info" : "neutral"}>{roleLabel[u.role]}</Badge></TableCell><TableCell>{formatDateTime(u.lastActive)} WITA</TableCell><TableCell><Status value={u.status} /> <Button variant="ghost" size="sm"><UserCog size={14} /> Kelola</Button></TableCell></TableRow>)}</TableBody></Table></TableContainer>
-    </Panel>
-  </>;
+export default async function UsersPage() {
+  await requireRole([Role.ADMIN]);
+  const users = await db.user.findMany({ include: { skpd: true }, orderBy: [{ status: "asc" }, { name: "asc" }] });
+  const active = users.filter((user) => user.status === UserStatus.ACTIVE).length;
+  const admins = users.filter((user) => user.role === Role.ADMIN).length;
+  const approvers = users.filter((user) => user.role === Role.APPROVER).length;
+  return <><AdminHeader title="Pengguna dan akses" description="Daftar akun aparatur, peran, perangkat daerah, dan status akses SIPINTER." /><section className={s.summaryStrip}><div className={s.summaryItem}><span>Total akun</span><strong>{users.length}</strong><small>Seluruh peran</small></div><div className={s.summaryItem}><span>Aktif</span><strong>{active}</strong><small>Akun dapat masuk</small></div><div className={s.summaryItem}><span>Administrator</span><strong>{admins}</strong><small>Pengelola kendaraan</small></div><div className={s.summaryItem}><span>Sekda</span><strong>{approvers}</strong><small>Pemberi persetujuan</small></div></section><Panel title="Daftar pengguna" description={`${users.length} akun tercatat`} flush><TableContainer><Table><TableHead><TableRow><TableHeader>Pengguna</TableHeader><TableHeader>NIP</TableHeader><TableHeader>Perangkat daerah</TableHeader><TableHeader>Peran</TableHeader><TableHeader>Terakhir masuk</TableHeader><TableHeader>Status</TableHeader></TableRow></TableHead><TableBody>{users.map((user) => <TableRow key={user.id}><TableCell><strong>{user.name}</strong><div className={s.compact}>{user.email}</div></TableCell><TableCell className={s.mono}>{user.nip}</TableCell><TableCell>{user.skpd.name}<div className={s.compact}>{user.position}</div></TableCell><TableCell><Badge tone={user.role === Role.ADMIN ? "maroon" : user.role === Role.APPROVER ? "info" : "neutral"}>{user.role}</Badge></TableCell><TableCell>{user.lastLoginAt ? `${formatDateTime(user.lastLoginAt)} WITA` : "Belum pernah"}</TableCell><TableCell><Status value={user.status} /></TableCell></TableRow>)}</TableBody></Table></TableContainer></Panel></>;
 }

@@ -1,7 +1,30 @@
-import { Download, Plus } from "lucide-react";
-import { AdminHeader, Button, FilterBar, ItemTable, LinkButton, Panel, Select } from "@/components/admin/admin-ui";
-import { inventoryItems } from "@/lib/mock-data";
+import Link from "next/link";
+import { ItemCondition, ItemStatus, Role } from "@prisma/client";
+import { Plus } from "lucide-react";
+import { AdminHeader, ItemTable, Panel, s } from "@/components/admin/admin-ui";
+import { InventoryExportButton } from "@/components/admin/inventory-form";
+import { requireRole } from "@/lib/auth";
+import { db } from "@/lib/db";
+import { toInventoryItem } from "@/lib/inventory-view";
 
-export default function ItemsPage() {
-  return <><AdminHeader title="Master data kendaraan" description="Kelola identitas, kapasitas penumpang, kondisi, dan lokasi enam kendaraan dinas." actions={<><Button variant="outline"><Download size={16} /> Ekspor CSV</Button><LinkButton href="/admin/barang/tambah"><Plus size={16} /> Tambah kendaraan</LinkButton></>} /><FilterBar searchPlaceholder="Cari kode, nomor polisi, atau nama kendaraan"><Select aria-label="Jenis kendaraan"><option>Semua kendaraan</option><option>Bus Penumpang</option><option>Toyota HiAce</option></Select><Select aria-label="Kondisi"><option>Semua kondisi</option><option>Baik</option><option>Rusak ringan</option><option>Rusak berat</option></Select><Select aria-label="Status"><option>Semua status</option><option>Tersedia</option><option>Sedang dipinjam</option><option>Nonaktif</option></Select><Button variant="outline">Atur ulang</Button></FilterBar><Panel title="Daftar kendaraan" description="6 kendaraan dinas · kapasitas 12 sampai 30 penumpang" flush><ItemTable items={inventoryItems} /></Panel></>;
+export default async function ItemsPage({ searchParams }: { searchParams: Promise<{ q?: string; condition?: string; status?: string }> }) {
+  const [, params] = await Promise.all([requireRole([Role.ADMIN]), searchParams]);
+  const condition = Object.values(ItemCondition).includes(params.condition as ItemCondition) ? params.condition as ItemCondition : undefined;
+  const status = Object.values(ItemStatus).includes(params.status as ItemStatus) ? params.status as ItemStatus : undefined;
+  const q = params.q?.trim();
+  const records = await db.item.findMany({
+    where: {
+      ...(condition ? { condition } : {}),
+      ...(status ? { status } : {}),
+      ...(q ? { OR: [{ itemCode: { contains: q } }, { registrationNumber: { contains: q } }, { name: { contains: q } }] } : {}),
+    },
+    include: { category: true },
+    orderBy: [{ status: "asc" }, { name: "asc" }, { itemCode: "asc" }],
+  });
+  const items = records.map(toInventoryItem);
+  return <>
+    <AdminHeader title="Master data kendaraan" description="Kelola identitas, kapasitas penumpang, kondisi, dan lokasi kendaraan dinas." actions={<><InventoryExportButton items={items} /><Link className={s.linkButton} href="/admin/barang/tambah"><Plus size={16} aria-hidden="true" /> Tambah kendaraan</Link></>} />
+    <form className="filter-bar" method="get"><div className="filter-bar__search"><input name="q" defaultValue={q} aria-label="Cari kendaraan" placeholder="Cari kode, nomor polisi, atau nama kendaraan" /></div><select className="select" name="condition" defaultValue={condition ?? ""} aria-label="Kondisi"><option value="">Semua kondisi</option><option value="GOOD">Baik</option><option value="LIGHTLY_DAMAGED">Rusak ringan</option><option value="HEAVILY_DAMAGED">Rusak berat</option><option value="LOST">Hilang</option></select><select className="select" name="status" defaultValue={status ?? ""} aria-label="Status"><option value="">Semua status</option><option value="AVAILABLE">Tersedia</option><option value="OUT_OF_STOCK">Sedang dipinjam</option><option value="INACTIVE">Nonaktif</option></select><button className="button button--outline" type="submit">Terapkan</button><Link className={s.link} href="/admin/barang">Atur ulang</Link></form>
+    <Panel title="Daftar kendaraan" description={`${items.length} kendaraan ditemukan`} flush><ItemTable items={items} /></Panel>
+  </>;
 }

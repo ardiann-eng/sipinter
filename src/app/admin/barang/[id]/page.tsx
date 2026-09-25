@@ -1,129 +1,19 @@
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import { History, Pencil, QrCode } from "lucide-react";
-import {
-  AdminHeader,
-  Button,
-  DetailGrid,
-  DetailItem,
-  LinkButton,
-  Panel,
-  Status,
-  formatCurrency,
-  formatDate,
-  s,
-} from "@/components/admin/admin-ui";
-import { inventoryItems } from "@/lib/mock-data";
+import { Role } from "@prisma/client";
+import { AdminHeader, DetailGrid, DetailItem, LinkButton, Panel, Status, formatDateTime, s } from "@/components/admin/admin-ui";
+import { requireRole } from "@/lib/auth";
+import { db } from "@/lib/db";
+import { toInventoryItem } from "@/lib/inventory-view";
 
-export default async function ItemDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = await params;
-  const item = inventoryItems.find((x) => x.id === id);
-  if (!item) notFound();
-  return (
-    <>
-      <AdminHeader
-        title={item.name}
-        description={`${item.code} · ${item.registrationNumber}`}
-        actions={
-          <LinkButton href={`/admin/barang/${item.id}/edit`}>
-            <Pencil size={16} /> Edit kendaraan
-          </LinkButton>
-        }
-      />
-      <div className={s.grid7030}>
-        <div className={s.stack}>
-          <Panel title="Identitas kendaraan" action={<Status value={item.status} />}>
-            {item.imageUrl && (
-              <div className={s.vehicleHero}>
-                <Image src={item.imageUrl} alt={`${item.name} ${item.registrationNumber}`} fill sizes="(max-width: 900px) 100vw, 720px" priority />
-              </div>
-            )}
-            <DetailGrid>
-              <DetailItem label="Kategori">{item.category}</DetailItem>
-              <DetailItem label="Merek / model">
-                {item.brand ?? "-"} · {item.model ?? "-"}
-              </DetailItem>
-              <DetailItem label="Tanggal perolehan">
-                {item.acquisitionDate
-                  ? formatDate(item.acquisitionDate)
-                  : "Tidak tercatat"}
-              </DetailItem>
-              <DetailItem label="Nilai perolehan">
-                {item.acquisitionValue
-                  ? formatCurrency(item.acquisitionValue)
-                  : "Tidak tercatat"}
-              </DetailItem>
-              <DetailItem label="Penanggung jawab">
-                {item.custodian ?? "Bagian Umum Sekretariat Daerah"}
-              </DetailItem>
-              <DetailItem label="Lokasi">{item.location}</DetailItem>
-              <DetailItem wide label="Deskripsi">
-                {item.description ??
-                  "Kendaraan operasional Pemerintah Kota Makassar."}
-              </DetailItem>
-            </DetailGrid>
-          </Panel>
-          <Panel title="Riwayat mutasi dan kondisi">
-            <ul className={s.activity}>
-              <li>
-                <p>
-                  <strong>Stok dikembalikan</strong> dari kegiatan pelayanan
-                  keliling. Kondisi baik.
-                </p>
-                <time>13 Juli 2026, 15.32 WITA</time>
-              </li>
-              <li>
-                <p>
-                  <strong>Dipinjamkan</strong> kepada Dinas Kesehatan Kota
-                  Makassar.
-                </p>
-                <time>11 Juli 2026, 07.48 WITA</time>
-              </li>
-              <li>
-                <p>
-                  <strong>Pemeriksaan berkala</strong> oleh pengelola kendaraan.
-                  Tidak ada temuan.
-                </p>
-                <time>2 Juli 2026, 10.15 WITA</time>
-              </li>
-            </ul>
-          </Panel>
-        </div>
-        <aside className={s.stack}>
-          <Panel title="Ketersediaan terkini">
-            <div className={s.summaryItem}>
-              <span>Tersedia</span>
-              <strong>
-                {item.availableStock} / {item.totalStock}
-              </strong>
-              <small>
-                {item.unit} · kondisi <Status value={item.condition} />
-              </small>
-            </div>
-          </Panel>
-          <Panel title="Label kendaraan">
-            <div className={s.photo}>
-              <div>
-                <QrCode size={82} />
-                <br />
-                <span className={s.mono}>{item.code}</span>
-              </div>
-            </div>
-            <div className={s.actions} style={{ marginTop: 12 }}>
-              <Button variant="outline" disabled title="Pencetakan label belum terhubung">
-                Cetak label
-              </Button>
-              <LinkButton href="/admin/audit" secondary>
-                <History size={15} /> Audit
-              </LinkButton>
-            </div>
-          </Panel>
-        </aside>
-      </div>
-    </>
-  );
+export default async function ItemDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const [, { id }] = await Promise.all([requireRole([Role.ADMIN]), params]);
+  const record = await db.item.findUnique({ where: { id }, include: { category: true, requestItems: { include: { borrowingRequest: { include: { borrower: true } } }, orderBy: { borrowingRequest: { updatedAt: "desc" } }, take: 5 } } });
+  if (!record) notFound();
+  const item = toInventoryItem(record);
+  return <>
+    <AdminHeader title={item.name} description={`${item.code} · ${item.registrationNumber}`} actions={<LinkButton href={`/admin/barang/${item.id}/edit`}><Pencil size={16} aria-hidden="true" /> Edit kendaraan</LinkButton>} />
+    <div className={s.grid7030}><div className={s.stack}><Panel title="Identitas kendaraan" action={<Status value={item.status} />}>{item.imageUrl && <div className={s.vehicleHero}><Image src={item.imageUrl} alt={`${item.name} ${item.registrationNumber}`} fill sizes="(max-width: 900px) 100vw, 720px" priority /></div>}<DetailGrid><DetailItem label="Kategori">{item.category}</DetailItem><DetailItem label="Nomor polisi">{item.registrationNumber}</DetailItem><DetailItem label="Tahun pengadaan">{record.procurementYear}</DetailItem><DetailItem label="Penanggung jawab">{item.custodian}</DetailItem><DetailItem label="Lokasi">{item.location}</DetailItem><DetailItem wide label="Deskripsi">{item.description || "Kendaraan operasional Pemerintah Kota Makassar."}</DetailItem></DetailGrid></Panel><Panel title="Riwayat penggunaan terakhir">{record.requestItems.length ? <ul className={s.activity}>{record.requestItems.map((entry) => <li key={entry.id}><p><strong>{entry.borrowingRequest.registrationNumber}</strong> · {entry.borrowingRequest.borrower.name}<br />{entry.borrowingRequest.purpose}</p><time>{formatDateTime(entry.borrowingRequest.updatedAt)} WITA</time></li>)}</ul> : <p className={s.empty}>Belum ada riwayat penggunaan kendaraan.</p>}</Panel></div><aside className={s.stack}><Panel title="Ketersediaan terkini"><div className={s.summaryItem}><span>Tersedia</span><strong>{item.availableStock} / {item.totalStock}</strong><small>{item.unit} · kondisi <Status value={item.condition} /></small></div></Panel><Panel title="Label kendaraan"><div className={s.photo}><div><QrCode size={82} aria-hidden="true" /><br /><span className={s.mono}>{item.code}</span></div></div><div className={s.actions} style={{ marginTop: 12 }}><LinkButton href="/admin/audit" secondary><History size={15} aria-hidden="true" /> Audit</LinkButton></div></Panel></aside></div>
+  </>;
 }

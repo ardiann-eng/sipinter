@@ -68,27 +68,38 @@ describe("workflow SIPINTER literal", () => {
   it("memulihkan stok hanya untuk barang serviceable atau resolusi eksplisit", () => {
     expect(canRestoreStock({
       itemComplete: true,
+      accessoriesComplete: true,
       physicallyIntact: true,
       functioningProperly: true,
       result: ReturnVerificationResult.ACCEPTED,
     })).toBe(true);
     expect(canRestoreStock({
       itemComplete: false,
+      accessoriesComplete: true,
       physicallyIntact: true,
       functioningProperly: true,
       result: ReturnVerificationResult.ACCEPTED,
     })).toBe(false);
     expect(canRestoreStock({
       itemComplete: false,
+      accessoriesComplete: false,
       physicallyIntact: false,
       functioningProperly: false,
       result: ReturnVerificationResult.PROBLEM,
     })).toBe(false);
     expect(canRestoreStock({
       itemComplete: false,
+      accessoriesComplete: false,
       physicallyIntact: false,
       functioningProperly: false,
       result: ReturnVerificationResult.PROBLEM,
     }, true)).toBe(true);
+    expect(canRestoreStock({
+      itemComplete: true,
+      accessoriesComplete: false,
+      physicallyIntact: true,
+      functioningProperly: true,
+      result: ReturnVerificationResult.ACCEPTED,
+    })).toBe(false);
   });
 });

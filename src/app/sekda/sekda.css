@@ -90,6 +90,7 @@
 .report-unit-table > div:first-child { background: var(--surface-soft); color: var(--muted); font-size: 10px; text-transform: uppercase; }
 .report-unit-table > div + div { border-top: 1px solid var(--line); }
 .report-unit-table span { text-align: center; }
+.report-empty { color: var(--muted); margin: 0; padding: 20px; text-align: center; }
 .profile-layout { display: grid; gap: 18px; grid-template-columns: 340px 1fr; }
 .profile-card { align-items: center; display: flex; gap: 17px; }
 .profile-card__avatar { align-items: center; background: var(--maroon); border-radius: 12px; border-bottom: 4px solid var(--maroon-dark); color: var(--surface); display: flex; font-size: 22px; font-weight: 750; height: 76px; justify-content: center; width: 76px; }

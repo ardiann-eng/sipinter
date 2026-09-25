@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowRight, Clock3 } from "lucide-react";
-import { Badge, MobileRecord, Panel, Table, TableBody, TableCell, TableContainer, TableHead, TableHeader, TableRow } from "@/components";
+import { Badge, EmptyState, MobileRecord, Panel, Table, TableBody, TableCell, TableContainer, TableHead, TableHeader, TableRow } from "@/components";
 import type { ApprovalRecord } from "./data";
 
 function statusBadge(status: ApprovalRecord["status"]) {
@@ -11,6 +11,8 @@ function statusBadge(status: ApprovalRecord["status"]) {
 
 export function ApprovalRecords({ records, history = false }: { records: ApprovalRecord[]; history?: boolean }) {
   return <Panel flush title={history ? "Catatan keputusan" : "Antrean permohonan"} description={history ? "Keputusan persetujuan yang telah dicatat dalam sistem" : "Urutan berdasarkan waktu verifikasi administrator"}>
+    {!records.length && <EmptyState title={history ? "Belum ada riwayat keputusan" : "Tidak ada permohonan menunggu"} description={history ? "Keputusan yang sudah dicatat akan tampil di sini." : "Seluruh permohonan yang masuk sudah ditangani."} />}
+    {!!records.length && <>
     <TableContainer><Table className="approval-table"><TableHead><TableRow>
       <TableHeader>No. permohonan</TableHeader><TableHeader>Pemohon / perangkat daerah</TableHeader><TableHeader>Keperluan</TableHeader><TableHeader>Periode</TableHeader><TableHeader>Kendaraan</TableHeader><TableHeader>{history ? "Keputusan" : "Diverifikasi"}</TableHeader><TableHeader>Aksi</TableHeader>
     </TableRow></TableHead><TableBody>{records.map((record) => <TableRow key={record.id}>
@@ -25,5 +27,6 @@ export function ApprovalRecords({ records, history = false }: { records: Approva
     <div className="mobile-records">{records.map((record) => <MobileRecord key={record.id} eyebrow={record.number} title={record.requester} status={statusBadge(record.status)} fields={[
       { label: "Perangkat daerah", value: record.skpd }, { label: "Keperluan", value: record.purpose }, { label: "Periode", value: `${record.startDate.split(",")[0]} (${record.duration})` }, { label: "Kendaraan", value: `${record.items.reduce((sum, item) => sum + item.quantity, 0)} kendaraan, ${record.items.length} jenis` },
     ]} actions={<Link href={`/sekda/menunggu/${record.id}`} className="record-action-link">{history ? "Lihat rincian" : "Tinjau permohonan"}<ArrowRight size={15} /></Link>} />)}</div>
+    </>}
   </Panel>;
 }

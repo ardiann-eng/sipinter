@@ -46,6 +46,11 @@ const steps = [
 const allowedDocumentTypes = ["application/pdf", "image/jpeg", "image/png"];
 const maxFileSize = 5 * 1024 * 1024;
 
+function localDateValue(date = new Date()) {
+  const offset = date.getTimezoneOffset() * 60_000;
+  return new Date(date.getTime() - offset).toISOString().slice(0, 10);
+}
+
 type BorrowerProfile = typeof borrower;
 type CatalogItem = (typeof availableItems)[number];
 
@@ -65,6 +70,7 @@ export function LoanForm({
   const [submitError, setSubmitError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const router = useRouter();
+  const minBorrowDate = localDateValue();
 
   useEffect(() => {
     const saved = window.localStorage.getItem("sipinter-borrower-draft");
@@ -104,8 +110,8 @@ export function LoanForm({
         next.location = "Lokasi kegiatan wajib diisi.";
       if (!draft.startDate) next.startDate = "Tanggal mulai wajib diisi.";
       if (!draft.endDate) next.endDate = "Tanggal selesai wajib diisi.";
-      if (draft.startDate && draft.startDate < "2026-07-19")
-        next.startDate = "Tanggal mulai paling cepat 19 Juli 2026.";
+      if (draft.startDate && draft.startDate < minBorrowDate)
+        next.startDate = "Tanggal mulai tidak boleh berada di masa lalu.";
       if (draft.startDate && draft.endDate && draft.endDate < draft.startDate)
         next.endDate = "Tanggal selesai tidak boleh sebelum tanggal mulai.";
     }
@@ -296,14 +302,14 @@ export function LoanForm({
               />
               <DateField
                 label="Tanggal mulai"
-                min="2026-07-19"
+                min={minBorrowDate}
                 value={draft.startDate}
                 error={errors.startDate}
                 onChange={(value) => update("startDate", value)}
               />
               <DateField
                 label="Tanggal selesai"
-                min={draft.startDate || "2026-07-19"}
+                min={draft.startDate || minBorrowDate}
                 value={draft.endDate}
                 error={errors.endDate}
                 onChange={(value) => update("endDate", value)}

@@ -9,3 +9,4 @@ generated
 *.log
 prisma/*.db
 prisma/*.db-journal
+.tmp-e2e-*/

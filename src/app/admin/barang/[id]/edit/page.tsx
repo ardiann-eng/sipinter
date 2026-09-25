@@ -1,5 +1,15 @@
 import { notFound } from "next/navigation";
-import { AdminHeader, InventoryForm } from "@/components/admin/admin-ui";
-import { inventoryItems } from "@/lib/mock-data";
+import { Role } from "@prisma/client";
+import { AdminHeader } from "@/components/admin/admin-ui";
+import { InventoryForm } from "@/components/admin/inventory-form";
+import { requireRole } from "@/lib/auth";
+import { db } from "@/lib/db";
+import { toInventoryItem } from "@/lib/inventory-view";
 
-export default async function EditItemPage({ params }: { params: Promise<{ id: string }> }) { const { id } = await params; const item = inventoryItems.find((x) => x.id === id); if (!item) notFound(); return <><AdminHeader title="Edit kendaraan" description={`${item.name} · ${item.registrationNumber} · perubahan akan dicatat dalam audit log.`} /><InventoryForm item={item} /></>; }
+export default async function EditItemPage({ params }: { params: Promise<{ id: string }> }) {
+  const [, { id }] = await Promise.all([requireRole([Role.ADMIN]), params]);
+  const record = await db.item.findUnique({ where: { id }, include: { category: true } });
+  if (!record) notFound();
+  const item = toInventoryItem(record);
+  return <><AdminHeader title="Edit kendaraan" description={`${item.name} · ${item.registrationNumber} · perubahan dicatat dalam audit log.`} /><InventoryForm item={item} /></>;
+}

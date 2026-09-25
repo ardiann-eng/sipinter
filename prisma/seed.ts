@@ -148,8 +148,9 @@ async function main() {
       }),
     );
   }
-  const setda = seededSkpd[0];
-  const bpkad = seededSkpd[4];
+  const setda = seededSkpd.find((entry) => entry.code === "SETDA");
+  const bpkad = seededSkpd.find((entry) => entry.code === "BPKAD");
+  if (!setda || !bpkad) throw new Error("Data SKPD inti gagal dibuat");
 
   const users = new Map<Role, { id: string }>();
   for (const account of demoAccounts) {
@@ -189,6 +190,7 @@ async function main() {
     {
       legacyItemCode: "ELK-LPT-00128",
       itemCode: "KDR-BUS-7106A",
+      registrationNumber: "DD 7106 A",
       name: "Bus Penumpang 25 Seat",
       unit: "kendaraan",
       totalQuantity: 1,
@@ -203,6 +205,7 @@ async function main() {
     {
       legacyItemCode: "ELK-PRO-00047",
       itemCode: "KDR-BUS-7003AD",
+      registrationNumber: "DD 7003 AD",
       name: "Bus Penumpang 30 Seat",
       unit: "kendaraan",
       totalQuantity: 1,
@@ -217,6 +220,7 @@ async function main() {
     {
       legacyItemCode: "MEU-KRS-00082",
       itemCode: "KDR-BUS-7013RV",
+      registrationNumber: "DD 7013 RV",
       name: "Bus Penumpang 25 Seat",
       unit: "kendaraan",
       totalQuantity: 1,
@@ -231,6 +235,7 @@ async function main() {
     {
       legacyItemCode: "AUD-SPK-00031",
       itemCode: "KDR-HAC-7122A",
+      registrationNumber: "DD 7122 A",
       name: "HiAce 16 Seat",
       unit: "kendaraan",
       totalQuantity: 1,
@@ -245,6 +250,7 @@ async function main() {
     {
       legacyItemCode: "TRN-MBL-00009",
       itemCode: "KDR-HAP-7215RF",
+      registrationNumber: "DD 7215 RF",
       name: "HiAce Premio",
       unit: "kendaraan",
       totalQuantity: 1,
@@ -259,6 +265,7 @@ async function main() {
     {
       legacyItemCode: "TND-RPT-00056",
       itemCode: "KDR-HAC-7001TF",
+      registrationNumber: "DD 7001 TF",
       name: "HiAce 12 Seat",
       unit: "kendaraan",
       totalQuantity: 1,

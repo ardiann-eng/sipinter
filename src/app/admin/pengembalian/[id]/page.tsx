@@ -9,8 +9,8 @@ import { toBorrowerRequest } from "@/lib/borrower-request";
 import { ReturnVerificationActions } from "./return-verification-actions";
 
 export default async function ReturnDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const [actor, { id }] = await Promise.all([requireRole([Role.ADMIN]), params]);
-  const request = await db.borrowingRequest.findFirst({ where: { id, skpdId: actor.skpdId, status: { in: [BorrowingStatus.WAITING_RETURN_VERIFICATION, BorrowingStatus.RETURN_PROBLEM] } }, include: { borrower: { include: { skpd: true } }, items: { include: { item: true } }, handoverRecord: true, returnSubmissions: { where: { status: "SUBMITTED" }, orderBy: { submittedAt: "desc" }, take: 1, include: { photos: true } } } });
+  const [, { id }] = await Promise.all([requireRole([Role.ADMIN]), params]);
+  const request = await db.borrowingRequest.findFirst({ where: { id, status: { in: [BorrowingStatus.WAITING_RETURN_VERIFICATION, BorrowingStatus.RETURN_PROBLEM] } }, include: { borrower: { include: { skpd: true } }, items: { include: { item: true } }, handoverRecord: true, returnSubmissions: { where: { status: "SUBMITTED" }, orderBy: { submittedAt: "desc" }, take: 1, include: { photos: true } } } });
   if (!request) notFound();
   const submission = request.returnSubmissions[0];
   if (!submission) notFound();

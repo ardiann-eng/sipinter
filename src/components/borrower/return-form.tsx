@@ -13,7 +13,12 @@ const evidenceLabels = [
 ] as const;
 const allowedPhotoTypes = ["image/jpeg", "image/png"];
 
-export function ReturnForm({ requestId, number, itemCount }: { requestId: string; number: string; itemCount: number }) {
+function localDateValue(date = new Date()) {
+  const offset = date.getTimezoneOffset() * 60_000;
+  return new Date(date.getTime() - offset).toISOString().slice(0, 10);
+}
+
+export function ReturnForm({ requestId, number, itemCount, borrowDate }: { requestId: string; number: string; itemCount: number; borrowDate: string }) {
   const [photos, setPhotos] = useState<Array<File | null>>([
     null,
     null,
@@ -21,7 +26,8 @@ export function ReturnForm({ requestId, number, itemCount }: { requestId: string
     null,
   ]);
   const [condition, setCondition] = useState("");
-  const [returnedAt, setReturnedAt] = useState("2026-07-18");
+  const today = localDateValue();
+  const [returnedAt, setReturnedAt] = useState(today);
   const [note, setNote] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [sent, setSent] = useState(false);
@@ -89,7 +95,8 @@ export function ReturnForm({ requestId, number, itemCount }: { requestId: string
             label="Tanggal pengembalian"
             type="date"
             required
-            max="2026-07-19"
+            min={borrowDate}
+            max={today}
             value={returnedAt}
             onChange={(event) => setReturnedAt(event.target.value)}
             error={errors.returnedAt}

@@ -8,7 +8,9 @@ type ApprovalRequest = Prisma.BorrowingRequestGetPayload<{
 }>;
 
 export function toApprovalView(request: ApprovalRequest) {
-  const decision = request.approvalRecords[0];
+  const decision = [...request.approvalRecords].sort(
+    (left, right) => right.decidedAt.getTime() - left.decidedAt.getTime(),
+  )[0];
   const status = request.status === BorrowingStatus.WAITING_SEKDA_APPROVAL ? "MENUNGGU" : request.status === BorrowingStatus.REJECTED ? "DITOLAK" : "DISETUJUI";
   return {
     id: request.id,
@@ -24,7 +26,12 @@ export function toApprovalView(request: ApprovalRequest) {
     startDate: formatDate(request.borrowDate),
     endDate: formatDate(request.plannedReturnDate),
     duration: `${Math.max(1, Math.ceil((request.plannedReturnDate.getTime() - request.borrowDate.getTime()) / 86_400_000) + 1)} hari`,
-    items: request.items.map((entry) => ({ name: entry.item.name, code: entry.item.itemCode, quantity: entry.quantity, unit: entry.item.unit })),
+    items: request.items.map((entry) => ({
+      name: entry.item.name,
+      code: entry.item.registrationNumber ?? entry.item.itemCode,
+      quantity: entry.quantity,
+      unit: entry.item.unit,
+    })),
     admin: "Administrator SIPINTER",
     adminNote: request.adminNote ?? "Dokumen, kapasitas penumpang, dan ketersediaan kendaraan telah diverifikasi.",
     status,

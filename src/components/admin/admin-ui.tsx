@@ -246,6 +246,7 @@ export function ItemTable({ items }: { items: InventoryItem[] }) {
                   <div className={s.actions}>
                     <Link
                       title="Lihat"
+                      aria-label={`Lihat detail ${item.name} ${item.registrationNumber}`}
                       href={`/admin/barang/${item.id}`}
                       className={s.link}
                     >
@@ -253,6 +254,7 @@ export function ItemTable({ items }: { items: InventoryItem[] }) {
                     </Link>
                     <Link
                       title="Edit"
+                      aria-label={`Edit ${item.name} ${item.registrationNumber}`}
                       href={`/admin/barang/${item.id}/edit`}
                       className={s.link}
                     >
@@ -295,119 +297,6 @@ export function ItemTable({ items }: { items: InventoryItem[] }) {
         ))}
       </div>
     </>
-  );
-}
-
-export function InventoryForm({ item }: { item?: InventoryItem }) {
-  return (
-    <form className={s.stack}>
-      <Panel
-        title="Identitas kendaraan"
-        description="Kolom bertanda bintang wajib diisi."
-      >
-        <div className={s.formGrid}>
-          <label className="field">
-            <span className="field__label">Nama kendaraan *</span>
-            <input
-              className="input"
-              defaultValue={item?.name}
-              placeholder="Contoh: Bus Penumpang 25 Seat"
-            />
-          </label>
-          <label className="field">
-            <span className="field__label">Kategori *</span>
-            <select
-              className="select"
-              defaultValue={item?.category ?? "Kendaraan Dinas"}
-            >
-              <option>Kendaraan Dinas</option>
-            </select>
-          </label>
-          <label className="field">
-            <span className="field__label">Kode kendaraan *</span>
-            <input
-              className="input"
-              defaultValue={item?.code}
-              placeholder="KDR-BUS-00001"
-            />
-          </label>
-          <label className="field">
-            <span className="field__label">Nomor registrasi *</span>
-            <input
-              className="input"
-              defaultValue={item?.registrationNumber}
-              placeholder="DD 0000 XX"
-            />
-          </label>
-          <label className="field">
-            <span className="field__label">Merek</span>
-            <input className="input" defaultValue={item?.brand} />
-          </label>
-          <label className="field">
-            <span className="field__label">Model / tipe</span>
-            <input className="input" defaultValue={item?.model} />
-          </label>
-        </div>
-      </Panel>
-      <Panel title="Ketersediaan dan penempatan">
-        <div className={s.formGrid}>
-          <label className="field">
-            <span className="field__label">Jumlah kendaraan *</span>
-            <input
-              className="input"
-              type="number"
-              min="1"
-              defaultValue={item?.totalStock ?? 1}
-            />
-          </label>
-          <label className="field">
-            <span className="field__label">Satuan *</span>
-            <input className="input" defaultValue={item?.unit ?? "kendaraan"} />
-          </label>
-          <label className="field">
-            <span className="field__label">Kondisi awal *</span>
-            <select className="select" defaultValue={item?.condition ?? "GOOD"}>
-              <option value="GOOD">Baik</option>
-              <option value="LIGHTLY_DAMAGED">Rusak ringan</option>
-              <option value="HEAVILY_DAMAGED">Rusak berat</option>
-            </select>
-          </label>
-          <label className="field">
-            <span className="field__label">Lokasi penyimpanan *</span>
-            <input
-              className="input"
-              defaultValue={item?.location ?? "Pool Kendaraan Balaikota"}
-            />
-          </label>
-          <label className="field">
-            <span className="field__label">Tanggal perolehan</span>
-            <input
-              className="input"
-              type="date"
-              defaultValue={item?.acquisitionDate}
-            />
-          </label>
-          <label className="field">
-            <span className="field__label">Nilai perolehan (Rp)</span>
-            <input
-              className="input"
-              type="number"
-              defaultValue={item?.acquisitionValue}
-            />
-          </label>
-          <label className={`field ${s.full}`}>
-            <span className="field__label">Deskripsi</span>
-            <textarea className={s.textarea} defaultValue={item?.description} />
-          </label>
-        </div>
-      </Panel>
-      <div className={s.stickyActions}>
-        <LinkButton href="/admin/barang" secondary>
-          Batal
-        </LinkButton>
-        <Button type="submit">Simpan data kendaraan</Button>
-      </div>
-    </form>
   );
 }
 

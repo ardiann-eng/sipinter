@@ -1,8 +1,42 @@
-import { Camera, Printer } from "lucide-react";
-import { AdminHeader, Button, FilterBar, LinkButton, Panel, RequestIdentity, Select, Status, s } from "@/components/admin/admin-ui";
-import { inventoryRequests } from "@/lib/mock-data";
+import { BorrowingStatus, Role } from "@prisma/client";
+import { EmptyState } from "@/components";
+import { AdminHeader, Panel, RequestIdentity, Status, s } from "@/components/admin/admin-ui";
+import { HandoverActions } from "@/components/admin/handover-actions";
+import { requireRole } from "@/lib/auth";
+import { toBorrowerRequest } from "@/lib/borrower-request";
+import { db } from "@/lib/db";
 
-export default function HandoverPage() {
-  const request = { ...inventoryRequests[1], status: "READY_FOR_HANDOVER" as const };
-  return <><AdminHeader title="Penyerahan kendaraan" description="Catat pemeriksaan kendaraan dan bukti serah terima sebelum kendaraan keluar dari pool." actions={<LinkButton href="/admin/laporan" secondary><Printer size={16} /> Cetak agenda</LinkButton>} /><FilterBar searchPlaceholder="Cari nomor persetujuan atau peminjam"><Select aria-label="Tanggal"><option>Hari ini, 18 Juli 2026</option><option>Besok, 19 Juli 2026</option></Select><Button variant="outline">Cari</Button></FilterBar><div className={s.grid7030}><div className={s.stack}><Panel title="Permohonan siap diserahkan" action={<Status value={request.status} />}><RequestIdentity request={request} /></Panel><Panel title="Formulir serah terima kendaraan" description="Nomor BAST dibuat otomatis setelah disimpan."><div className={s.formGrid}><label className="field"><span className="field__label">Tanggal dan waktu penyerahan *</span><input className="input" type="datetime-local" defaultValue="2026-07-18T10:00" /></label><label className="field"><span className="field__label">Petugas penyerah *</span><input className="input" defaultValue="Syarifuddin · NIP 198205122006041004" /></label><label className="field"><span className="field__label">Penerima kendaraan *</span><input className="input" defaultValue={request.borrowerName} /></label><label className="field"><span className="field__label">Nomor identitas penerima *</span><input className="input" defaultValue={request.borrowerNip} /></label></div><h3 className={s.sectionTitle}>Pemeriksaan per kendaraan</h3><div className={s.stack}>{request.items.map((item) => <div className={s.check} key={item.itemId}><input type="checkbox" /><div style={{ flex: 1 }}><strong>{item.itemName} · {item.quantity} kendaraan</strong><div className={s.formGrid} style={{ marginTop: 10 }}><select className="select" defaultValue="GOOD"><option value="GOOD">Kondisi baik</option><option value="LIGHTLY_DAMAGED">Rusak ringan</option></select><input className="input" placeholder="Odometer / bahan bakar / catatan kelengkapan" /></div></div></div>)}</div><h3 className={s.sectionTitle}>Kelengkapan serah terima</h3><div className={s.checklist}>{["Nomor polisi sesuai persetujuan", "STNK dan kunci kendaraan lengkap", "Kondisi eksterior dan interior diperiksa", "Bahan bakar dan odometer dicatat", "Batas pengembalian dijelaskan"].map((label) => <label className={s.check} key={label}><input type="checkbox" />{label}</label>)}</div><label className="field"><span className="field__label">Catatan kondisi awal</span><textarea className={s.textarea} defaultValue="Kendaraan berfungsi normal. Kunci, STNK, kondisi ban, bahan bakar, dan odometer telah diperiksa bersama penerima." /></label></Panel></div><aside className={s.stack}><Panel title="Bukti visual"><div className={s.photo}><div><Camera size={28} /><br />Foto kendaraan dan penerima<br /><small>JPG/PNG, maksimal 5 MB</small></div></div><Button variant="outline" style={{ width: "100%", marginTop: 10 }}><Camera size={16} /> Ambil foto</Button></Panel><Panel title="Konfirmasi"><div className={s.note}>Penyimpanan akan mengubah ketersediaan kendaraan dan status permohonan menjadi <strong>Dipinjam</strong>.</div><label className={s.check}><input type="checkbox" /> Tanda tangan penerima telah dibubuhkan pada BAST.</label><Button style={{ width: "100%" }}>Simpan dan terbitkan BAST</Button></Panel></aside></div></>;
+export const dynamic = "force-dynamic";
+
+export default async function HandoverPage() {
+  await requireRole([Role.ADMIN]);
+  const requests = await db.borrowingRequest.findMany({
+    where: { status: { in: [BorrowingStatus.APPROVED, BorrowingStatus.READY_FOR_HANDOVER] } },
+    include: { borrower: { include: { skpd: true } }, items: { include: { item: true } } },
+    orderBy: [{ borrowDate: "asc" }, { approvedAt: "asc" }],
+  });
+  const approved = requests.filter((request) => request.status === BorrowingStatus.APPROVED).length;
+  const ready = requests.length - approved;
+
+  return <>
+    <AdminHeader title="Penyerahan kendaraan" description="Siapkan kendaraan yang telah disetujui, lalu catat bukti serah terima saat unit keluar dari pool." />
+    <section className={s.summaryStrip} aria-label="Ringkasan penyerahan">
+      <div className={s.summaryItem}><span>Disetujui</span><strong>{approved}</strong><small>Perlu disiapkan</small></div>
+      <div className={s.summaryItem}><span>Siap diserahkan</span><strong>{ready}</strong><small>Menunggu serah terima fisik</small></div>
+    </section>
+    <div className={s.stack}>
+      {requests.length ? requests.map((request) => {
+        const view = toBorrowerRequest(request);
+        return <Panel key={request.id} title={request.registrationNumber} description={`${request.borrower.name} · ${request.borrower.skpd.name}`} action={<Status value={request.status} />}>
+          <div className={s.grid7030}>
+            <div className={s.stack}>
+              <RequestIdentity request={view} />
+              <div className={s.note}><strong>Kendaraan:</strong>{" "}{request.items.map((entry) => `${entry.item.name} (${entry.item.registrationNumber ?? entry.item.itemCode})`).join(", ")}</div>
+            </div>
+            <HandoverActions requestId={request.id} status={request.status === BorrowingStatus.APPROVED ? BorrowingStatus.APPROVED : BorrowingStatus.READY_FOR_HANDOVER} borrowerName={request.borrower.name} borrowerNip={request.borrower.nip} />
+          </div>
+        </Panel>;
+      }) : <Panel title="Antrean penyerahan"><EmptyState title="Belum ada kendaraan yang perlu diserahkan" description="Permohonan yang disetujui Sekretaris Daerah akan muncul di sini." /></Panel>}
+    </div>
+  </>;
 }
