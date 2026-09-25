@@ -186,8 +186,38 @@ async function main() {
     update: { name: "Kendaraan Dinas" },
     create: { code: "KENDARAAN", name: "Kendaraan Dinas" },
   });
+  const rooms = await prisma.itemCategory.upsert({
+    where: { code: "RUANGAN" },
+    update: {
+      name: "Ruangan Pertemuan",
+      description: "Ruangan rapat dan kegiatan di lingkungan Balai Kota Makassar.",
+    },
+    create: {
+      code: "RUANGAN",
+      name: "Ruangan Pertemuan",
+      description: "Ruangan rapat dan kegiatan di lingkungan Balai Kota Makassar.",
+    },
+  });
+  const eventEquipment = await prisma.itemCategory.upsert({
+    where: { code: "PERLENGKAPAN_ACARA" },
+    update: {
+      name: "Perlengkapan Acara",
+      description: "Perlengkapan pendukung rapat, seremoni, dan kegiatan kedinasan.",
+    },
+    create: {
+      code: "PERLENGKAPAN_ACARA",
+      name: "Perlengkapan Acara",
+      description: "Perlengkapan pendukung rapat, seremoni, dan kegiatan kedinasan.",
+    },
+  });
+  const categories = new Map([
+    ["KENDARAAN", vehicles.id],
+    ["RUANGAN", rooms.id],
+    ["PERLENGKAPAN_ACARA", eventEquipment.id],
+  ]);
   const items = [
     {
+      categoryCode: "KENDARAAN",
       legacyItemCode: "ELK-LPT-00128",
       itemCode: "KDR-BUS-7106A",
       registrationNumber: "DD 7106 A",
@@ -203,6 +233,7 @@ async function main() {
       description: "Bus dinas DD 7106 A dengan kapasitas maksimal 25 penumpang.",
     },
     {
+      categoryCode: "KENDARAAN",
       legacyItemCode: "ELK-PRO-00047",
       itemCode: "KDR-BUS-7003AD",
       registrationNumber: "DD 7003 AD",
@@ -218,6 +249,7 @@ async function main() {
       description: "Bus dinas DD 7003 AD dengan kapasitas maksimal 30 penumpang.",
     },
     {
+      categoryCode: "KENDARAAN",
       legacyItemCode: "MEU-KRS-00082",
       itemCode: "KDR-BUS-7013RV",
       registrationNumber: "DD 7013 RV",
@@ -233,6 +265,7 @@ async function main() {
       description: "Bus dinas DD 7013 RV dengan kapasitas maksimal 25 penumpang.",
     },
     {
+      categoryCode: "KENDARAAN",
       legacyItemCode: "AUD-SPK-00031",
       itemCode: "KDR-HAC-7122A",
       registrationNumber: "DD 7122 A",
@@ -248,6 +281,7 @@ async function main() {
       description: "Toyota HiAce DD 7122 A dengan kapasitas maksimal 16 penumpang.",
     },
     {
+      categoryCode: "KENDARAAN",
       legacyItemCode: "TRN-MBL-00009",
       itemCode: "KDR-HAP-7215RF",
       registrationNumber: "DD 7215 RF",
@@ -263,6 +297,7 @@ async function main() {
       description: "Toyota HiAce Premio DD 7215 RF untuk perjalanan dinas.",
     },
     {
+      categoryCode: "KENDARAAN",
       legacyItemCode: "TND-RPT-00056",
       itemCode: "KDR-HAC-7001TF",
       registrationNumber: "DD 7001 TF",
@@ -277,16 +312,86 @@ async function main() {
       mainPhoto: "/kendaraan/hiace-12-seat-dd-7001-tf.jpg",
       description: "Toyota HiAce DD 7001 TF dengan kapasitas maksimal 12 penumpang.",
     },
+    {
+      categoryCode: "RUANGAN",
+      legacyItemCode: "RGN-SPK-001",
+      itemCode: "RGN-SPK-001",
+      registrationNumber: null,
+      name: "Ruangan Sipakatau",
+      unit: "ruangan",
+      totalQuantity: 1,
+      availableQuantity: 1,
+      location: "Balai Kota Makassar",
+      condition: ItemCondition.GOOD,
+      status: "AVAILABLE" as const,
+      procurementYear: 2026,
+      mainPhoto: "/barang-peminjaman/ruangan-sipakatau.jpg",
+      description:
+        "Ruangan pertemuan berkapasitas maksimal 300 orang, dilengkapi meja pimpinan, tata suara, dan layar presentasi.",
+    },
+    {
+      categoryCode: "RUANGAN",
+      legacyItemCode: "RGN-SPL-001",
+      itemCode: "RGN-SPL-001",
+      registrationNumber: null,
+      name: "Ruangan Sipakalebbi",
+      unit: "ruangan",
+      totalQuantity: 1,
+      availableQuantity: 1,
+      location: "Balai Kota Makassar",
+      condition: ItemCondition.GOOD,
+      status: "AVAILABLE" as const,
+      procurementYear: 2026,
+      mainPhoto: "/barang-peminjaman/ruangan-sipakalebbi.jpg",
+      description:
+        "Ruangan rapat berkapasitas maksimal 50 orang dengan tempat duduk bertingkat dan fasilitas presentasi.",
+    },
+    {
+      categoryCode: "PERLENGKAPAN_ACARA",
+      legacyItemCode: "PRL-KRS-001",
+      itemCode: "PRL-KRS-001",
+      registrationNumber: null,
+      name: "Kursi Futura",
+      unit: "kursi",
+      totalQuantity: 300,
+      availableQuantity: 300,
+      location: "Gudang Perlengkapan Balai Kota Makassar",
+      condition: ItemCondition.GOOD,
+      status: "AVAILABLE" as const,
+      procurementYear: 2026,
+      mainPhoto: "/barang-peminjaman/kursi-futura.jpg",
+      description:
+        "Kursi Futura dengan sarung putih untuk rapat, seremoni, dan kegiatan resmi. Tersedia hingga 300 kursi.",
+    },
+    {
+      categoryCode: "PERLENGKAPAN_ACARA",
+      legacyItemCode: "PRL-TND-001",
+      itemCode: "PRL-TND-001",
+      registrationNumber: null,
+      name: "Tenda Kegiatan",
+      unit: "unit",
+      totalQuantity: 10,
+      availableQuantity: 10,
+      location: "Gudang Perlengkapan Balai Kota Makassar",
+      condition: ItemCondition.GOOD,
+      status: "AVAILABLE" as const,
+      procurementYear: 2026,
+      mainPhoto: "/barang-peminjaman/tenda-kegiatan.jpg",
+      description:
+        "Tenda kegiatan untuk kebutuhan acara luar ruangan di lingkungan Pemerintah Kota Makassar.",
+    },
   ];
   const seededItems = [];
   for (const entry of items) {
-    const { legacyItemCode, ...vehicle } = entry;
+    const { categoryCode, legacyItemCode, ...item } = entry;
+    const categoryId = categories.get(categoryCode);
+    if (!categoryId) throw new Error(`Kategori ${categoryCode} belum dibuat`);
     const existing =
-      (await prisma.item.findUnique({ where: { itemCode: vehicle.itemCode } })) ??
+      (await prisma.item.findUnique({ where: { itemCode: item.itemCode } })) ??
       (await prisma.item.findUnique({ where: { itemCode: legacyItemCode } }));
     const data = {
-      ...vehicle,
-      categoryId: vehicles.id,
+      ...item,
+      categoryId,
       skpdId: setda.id,
     };
     seededItems.push(
@@ -362,7 +467,7 @@ async function main() {
   }
 
   console.info(
-    "Seed SIPINTER selesai: SKPD, tiga akun demo, kendaraan, dan SIPINTER/PMK/VII/2026/00128 dibuat.",
+    "Seed SIPINTER selesai: SKPD, tiga akun demo, inventaris, dan SIPINTER/PMK/VII/2026/00128 dibuat.",
   );
 }
 

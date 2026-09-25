@@ -193,7 +193,7 @@ export function ItemTable({ items }: { items: InventoryItem[] }) {
           <TableHead>
             <TableRow>
               <TableHeader>Kode / Registrasi</TableHeader>
-              <TableHeader>Kendaraan</TableHeader>
+              <TableHeader>Barang / fasilitas</TableHeader>
               <TableHeader>Stok</TableHeader>
               <TableHeader>Kondisi</TableHeader>
               <TableHeader>Lokasi</TableHeader>

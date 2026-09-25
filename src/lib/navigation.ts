@@ -27,7 +27,7 @@ export const navigationByRole: Record<UserRole, NavigationItem[]> = {
     { label: "Verifikasi Peminjaman", href: "/admin/verifikasi", icon: "request", badge: 7 },
     { label: "Penyerahan Kendaraan", href: "/admin/penyerahan", icon: "handover" },
     { label: "Verifikasi Pengembalian", href: "/admin/pengembalian", icon: "return", badge: 3 },
-    { label: "Master Kendaraan", href: "/admin/barang", icon: "inventory" },
+    { label: "Master Inventaris", href: "/admin/barang", icon: "inventory" },
     { label: "Laporan Penggunaan", href: "/admin/laporan", icon: "report" },
     { label: "Manajemen Pengguna", href: "/admin/pengguna", icon: "users" },
     { label: "Audit Aktivitas", href: "/admin/audit", icon: "audit" },
@@ -51,7 +51,7 @@ export const mobileNavigationByRole: Record<UserRole, NavigationItem[]> = {
   ADMIN: [
     { label: "Ringkasan", href: "/admin/ringkasan", icon: "dashboard" },
     { label: "Tugas", href: "/admin/verifikasi", icon: "request", badge: 7 },
-    { label: "Kendaraan", href: "/admin/barang", icon: "inventory" },
+    { label: "Inventaris", href: "/admin/barang", icon: "inventory" },
     { label: "Laporan", href: "/admin/laporan", icon: "report" },
     { label: "Menu", href: "/admin/menu", icon: "more" },
   ],

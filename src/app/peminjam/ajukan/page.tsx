@@ -21,6 +21,7 @@ export default async function ApplyPage({ searchParams }: { searchParams: Promis
     db.user.findUniqueOrThrow({ where: { id: user.id }, include: { skpd: true } }),
     db.item.findMany({
       where: { OR: [{ status: "AVAILABLE", availableQuantity: { gt: 0 } }, ...(selectedIds.length ? [{ id: { in: selectedIds } }] : [])] },
+      include: { category: true },
       orderBy: [{ name: "asc" }, { itemCode: "asc" }],
     }),
   ]);
@@ -30,7 +31,7 @@ export default async function ApplyPage({ searchParams }: { searchParams: Promis
     name: item.name,
     code: item.itemCode,
     registrationNumber: item.registrationNumber ?? item.itemCode,
-    category: "Kendaraan Dinas",
+    category: item.category.name,
     location: item.location,
     unit: item.unit,
     availableStock: Math.max(item.availableQuantity, selectedQuantities.get(item.id) ?? 0),
@@ -52,5 +53,5 @@ export default async function ApplyPage({ searchParams }: { searchParams: Promis
     hasSupporting: Boolean(revision.approvalLetterFile),
     adminNote: revision.adminNote ?? undefined,
   } : undefined;
-  return <div className={styles.page}><PageHeader eyebrow={revision ? "Perbaikan pengajuan" : "Pengajuan kendaraan"} title={revision ? `Revisi ${revision.registrationNumber}` : "Ajukan Peminjaman Kendaraan"} description={revision ? "Perbarui pengajuan yang sama sesuai catatan administrator." : "Pilih kendaraan sesuai jumlah penumpang, lalu lengkapi jadwal dan dokumen perjalanan dinas."} /><LoanForm borrower={borrower} items={items} revision={revisionDraft} policy={policy} /></div>;
+  return <div className={styles.page}><PageHeader eyebrow={revision ? "Perbaikan pengajuan" : "Pengajuan peminjaman"} title={revision ? `Revisi ${revision.registrationNumber}` : "Ajukan Peminjaman Barang & Fasilitas"} description={revision ? "Perbarui pengajuan yang sama sesuai catatan administrator." : "Pilih barang atau fasilitas yang dibutuhkan, lalu lengkapi jadwal dan dokumen kegiatan dinas."} /><LoanForm borrower={borrower} items={items} revision={revisionDraft} policy={policy} /></div>;
 }

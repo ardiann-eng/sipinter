@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
     const actor = await requireRole([Role.ADMIN]);
     const body = await request.json();
     const category = await db.itemCategory.findUniqueOrThrow({
-      where: { code: "KENDARAAN" },
+      where: { code: typeof body.categoryCode === "string" ? body.categoryCode : "KENDARAAN" },
     });
     const parsed = itemSchema.safeParse({
       ...body,
@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
     });
     if (!parsed.success) {
       return NextResponse.json(
-        { error: parsed.error.issues[0]?.message ?? "Data kendaraan tidak valid." },
+        { error: parsed.error.issues[0]?.message ?? "Data barang tidak valid." },
         { status: 400 },
       );
     }
@@ -45,10 +45,10 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
       return NextResponse.json(
-        { error: "Kode kendaraan atau nomor polisi sudah digunakan." },
+        { error: "Kode barang atau nomor polisi sudah digunakan." },
         { status: 409 },
       );
     }
-    return apiErrorResponse(error, "Kendaraan belum dapat disimpan.");
+    return apiErrorResponse(error, "Barang belum dapat disimpan.");
   }
 }

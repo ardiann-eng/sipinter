@@ -45,12 +45,16 @@ export const profileContactSchema = z.object({
 });
 
 export const itemSchema = z.object({
-  itemCode: requiredText("Kode kendaraan", 64).regex(/^[A-Za-z0-9./_-]+$/),
-  registrationNumber: requiredText("Nomor polisi", 32).regex(
-    /^[A-Za-z]{1,3}\s*\d{1,4}\s*[A-Za-z]{0,3}$/,
-    "Nomor polisi tidak valid",
-  ),
-  name: requiredText("Nama kendaraan"),
+  itemCode: requiredText("Kode barang", 64).regex(/^[A-Za-z0-9./_-]+$/),
+  registrationNumber: z.string().trim().max(32).nullable().optional().transform((value, context) => {
+    if (!value) return null;
+    if (!/^[A-Za-z]{1,3}\s*\d{1,4}\s*[A-Za-z]{0,3}$/.test(value)) {
+      context.addIssue({ code: "custom", message: "Nomor polisi tidak valid" });
+      return z.NEVER;
+    }
+    return value;
+  }),
+  name: requiredText("Nama barang"),
   categoryId: id,
   location: requiredText("Lokasi", 255),
   skpdId: id,
@@ -63,7 +67,7 @@ export const itemSchema = z.object({
   description: optionalText(),
   mainPhoto: optionalText(500),
 }).refine((value) => value.availableQuantity <= value.totalQuantity, {
-  message: "Jumlah kendaraan tersedia tidak boleh melebihi total kendaraan",
+  message: "Jumlah tersedia tidak boleh melebihi total barang",
   path: ["availableQuantity"],
 });
 

@@ -11,5 +11,5 @@ export default async function EditItemPage({ params }: { params: Promise<{ id: s
   const record = await db.item.findUnique({ where: { id }, include: { category: true } });
   if (!record) notFound();
   const item = toInventoryItem(record);
-  return <><AdminHeader title="Edit kendaraan" description={`${item.name} · ${item.registrationNumber} · perubahan dicatat dalam audit log.`} /><InventoryForm item={item} /></>;
+  return <><AdminHeader title="Edit barang" description={`${item.name} · ${item.code} · perubahan dicatat dalam audit log.`} /><InventoryForm item={item} /></>;
 }

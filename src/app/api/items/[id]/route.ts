@@ -13,16 +13,18 @@ export async function PATCH(
   try {
     const actor = await requireRole([Role.ADMIN]);
     const { id } = await params;
-    const [body, current, category] = await Promise.all([
-      request.json(),
+    const body = await request.json();
+    const [current, category] = await Promise.all([
       db.item.findUniqueOrThrow({ where: { id } }),
-      db.itemCategory.findUniqueOrThrow({ where: { code: "KENDARAAN" } }),
+      db.itemCategory.findUniqueOrThrow({
+        where: { code: typeof body.categoryCode === "string" ? body.categoryCode : "KENDARAAN" },
+      }),
     ]);
     const borrowedQuantity = current.totalQuantity - current.availableQuantity;
     const totalQuantity = Number(body.totalQuantity);
     if (!Number.isInteger(totalQuantity) || totalQuantity < borrowedQuantity) {
       return NextResponse.json(
-        { error: `Jumlah total tidak boleh kurang dari ${borrowedQuantity} kendaraan yang sedang dipinjam.` },
+        { error: `Jumlah total tidak boleh kurang dari ${borrowedQuantity} barang yang sedang dipinjam.` },
         { status: 400 },
       );
     }
@@ -41,7 +43,7 @@ export async function PATCH(
     });
     if (!parsed.success) {
       return NextResponse.json(
-        { error: parsed.error.issues[0]?.message ?? "Data kendaraan tidak valid." },
+        { error: parsed.error.issues[0]?.message ?? "Data barang tidak valid." },
         { status: 400 },
       );
     }
@@ -65,10 +67,10 @@ export async function PATCH(
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
       return NextResponse.json(
-        { error: "Kode kendaraan atau nomor polisi sudah digunakan." },
+        { error: "Kode barang atau nomor polisi sudah digunakan." },
         { status: 409 },
       );
     }
-    return apiErrorResponse(error, "Kendaraan belum dapat diperbarui.");
+    return apiErrorResponse(error, "Barang belum dapat diperbarui.");
   }
 }
