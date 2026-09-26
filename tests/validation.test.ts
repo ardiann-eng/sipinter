@@ -14,13 +14,14 @@ const submission = (photoCount: number) => ({
 });
 
 describe("validasi pengembalian", () => {
-  it("menerima 2-4 foto", () => {
+  it("menerima pengembalian tanpa foto atau hingga 4 foto", () => {
+    expect(returnSubmissionSchema.safeParse(submission(0)).success).toBe(true);
+    expect(returnSubmissionSchema.safeParse(submission(1)).success).toBe(true);
     expect(returnSubmissionSchema.safeParse(submission(2)).success).toBe(true);
     expect(returnSubmissionSchema.safeParse(submission(4)).success).toBe(true);
   });
 
-  it("menolak kurang dari 2 atau lebih dari 4 foto", () => {
-    expect(returnSubmissionSchema.safeParse(submission(1)).success).toBe(false);
+  it("menolak lebih dari 4 foto", () => {
     expect(returnSubmissionSchema.safeParse(submission(5)).success).toBe(false);
   });
 });

@@ -7,13 +7,13 @@ import {
   ArrowLeft,
   ArrowRight,
   Check,
-  ChevronDown,
   LockKeyhole,
   ShieldCheck,
 } from "lucide-react";
 import anniversaryLogo from "../../../images.png";
 import cityLogo from "../../../logo-makassarkota-239x300.png";
 import styles from "./registration.module.css";
+import { Select } from "@/components";
 
 const rankGroups = [
   "Juru Muda (I/a)",
@@ -47,8 +47,8 @@ export function RegistrationForm({
   function next(form: HTMLFormElement) {
     const fields =
       step === 1
-        ? ["name", "nip", "rankGroup", "nik", "phone"]
-        : ["skpdId", "email", "password", "passwordConfirmation", "consent"];
+        ? ["name", "nip", "nik", "phone"]
+        : ["email", "password", "passwordConfirmation", "consent"];
     if (
       !fields.every(
         (name) =>
@@ -64,6 +64,14 @@ export function RegistrationForm({
         field.reportValidity();
         return;
       }
+    }
+    if (step === 1 && !new FormData(form).get("rankGroup")) {
+      setError("Pilih pangkat atau golongan terlebih dahulu.");
+      return;
+    }
+    if (step === 2 && !new FormData(form).get("skpdId")) {
+      setError("Pilih instansi terlebih dahulu.");
+      return;
     }
     if (
       step === 2 &&
@@ -87,6 +95,11 @@ export function RegistrationForm({
     setLoading(true);
     setError("");
     const data = new FormData(event.currentTarget);
+    if (!data.get("skpdId")) {
+      setError("Pilih instansi terlebih dahulu.");
+      setLoading(false);
+      return;
+    }
     try {
       const response = await fetch("/api/auth/register", {
         method: "POST",
@@ -206,19 +219,16 @@ export function RegistrationForm({
                   placeholder="18 digit NIP"
                 />
               </Field>
-              <Field label="Pangkat / Golongan">
-                <span className={styles.select}>
-                  <select name="rankGroup" required defaultValue="">
+              <div className={styles.field}>
+                <Select label="Pangkat / Golongan" name="rankGroup" required defaultValue="">
                     <option value="" disabled>
                       Pilih pangkat/golongan
                     </option>
                     {rankGroups.map((group) => (
                       <option key={group}>{group}</option>
                     ))}
-                  </select>
-                  <ChevronDown size={17} />
-                </span>
-              </Field>
+                </Select>
+              </div>
               <Field label="Nomor KTP / NIK">
                 <input
                   name="nik"
@@ -242,9 +252,8 @@ export function RegistrationForm({
               </Field>
             </div>
             <div hidden={step !== 2} className={styles.fields}>
-              <Field label="Nama instansi / SKPD">
-                <span className={styles.select}>
-                  <select name="skpdId" required defaultValue="">
+              <div className={styles.field}>
+                <Select label="Nama instansi / SKPD" name="skpdId" required defaultValue="">
                     <option value="" disabled>
                       Pilih instansi
                     </option>
@@ -253,10 +262,8 @@ export function RegistrationForm({
                         {skpd.name}
                       </option>
                     ))}
-                  </select>
-                  <ChevronDown size={17} />
-                </span>
-              </Field>
+                </Select>
+              </div>
               <Field label="Email kedinasan">
                 <input
                   name="email"

@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, BusFront, CheckCircle2, FileCheck2, UserRound } from "lucide-react";
+import { ArrowLeft, BusFront, Camera, CheckCircle2, FileCheck2, UserRound } from "lucide-react";
 import { DecisionPanel } from "@/components/approver";
+import { ApprovalLetter } from "@/components/approval-letter";
 import { Badge, DetailGrid, DetailItem, DocumentPlaceholder, Panel, Timeline } from "@/components";
 import { requireRole } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -11,7 +12,7 @@ import { Role } from "@prisma/client";
 export default async function ApprovalDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   await requireRole([Role.APPROVER]);
-  const request = await db.borrowingRequest.findUnique({ where: { id }, include: { borrower: { include: { skpd: true } }, items: { include: { item: true } }, approvalRecords: true } });
+  const request = await db.borrowingRequest.findUnique({ where: { id }, include: { borrower: { include: { skpd: true } }, items: { include: { item: true } }, approvalRecords: true, returnSubmissions: { orderBy: { submittedAt: "desc" }, take: 1, include: { photos: true } } } });
   if (!request) notFound();
   const record = toApprovalView(request);
   const pending = record.status === "MENUNGGU";
@@ -29,9 +30,11 @@ export default async function ApprovalDetailPage({ params }: { params: Promise<{
         </DetailGrid></Panel>
         <Panel title="Daftar kendaraan" description="Kapasitas dan ketersediaan telah dikonfirmasi administrator" action={<BusFront size={20} />} flush><div className="requested-items">{record.items.map((item, index) => <div key={item.code}><span>{index + 1}</span><p><strong>{item.name}</strong><small>{item.code}</small></p><b>{item.quantity} {item.unit}</b><Badge tone="success">Tersedia</Badge></div>)}</div></Panel>
         <Panel title="Dokumen pendukung" description="Dokumen diterima bersama pengajuan" action={<FileCheck2 size={20} />}><div className="approval-documents">
+          <ApprovalLetter requestId={request.id} signed={Boolean(request.approvedAt)} />
           {request.ktpFile ? <DocumentPlaceholder name="Identitas peminjam" type="document" description="Dokumen identitas yang diunggah pemohon" href={`/api/uploads/${encodeURIComponent(request.ktpFile)}`} /> : <p>Dokumen identitas tidak tersedia.</p>}
           {request.approvalLetterFile ? <DocumentPlaceholder name="Surat tugas / dokumen pendukung" type="document" description="Dokumen kedinasan yang diunggah pemohon" href={`/api/uploads/${encodeURIComponent(request.approvalLetterFile)}`} /> : <p>Surat tugas tidak tersedia.</p>}
         </div></Panel>
+        {request.returnSubmissions[0] && <Panel title="Bukti pengembalian" description="Foto yang dikirim peminjam saat pengembalian"><div className="return-evidence">{request.returnSubmissions[0].photos.length ? request.returnSubmissions[0].photos.map((photo) => <a key={photo.id} href={`/api/uploads/${encodeURIComponent(photo.storageKey ?? photo.fileUrl)}`} target="_blank" rel="noreferrer"><span className="return-evidence__preview" style={{ backgroundImage: `url(/api/uploads/${encodeURIComponent(photo.storageKey ?? photo.fileUrl)})` }} /><span><Camera size={17} aria-hidden="true" />{photo.originalName || "Lihat foto bukti"}</span></a>) : <p>Peminjam tidak menambahkan foto bukti.</p>}</div></Panel>}
         <Panel title="Catatan verifikasi administrator" action={<CheckCircle2 size={20} />}><div className="verification-note"><Badge tone="success" dot>Lengkap dan layak diteruskan</Badge><p>{record.adminNote}</p><footer><strong>{record.admin}</strong><span>Administrator SIPINTER</span><time>{record.verifiedAt}</time></footer></div></Panel>
         <Panel title="Riwayat proses"><Timeline items={[
           { id: "1", title: "Permohonan diajukan", description: `${record.requester} mengirim permohonan beserta dokumen pendukung.`, timestamp: record.submittedAt, state: "complete" },

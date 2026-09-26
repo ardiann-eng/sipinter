@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import {
-  CalendarDays,
   Check,
   ChevronLeft,
   ChevronRight,
@@ -15,6 +14,7 @@ import {
 } from "lucide-react";
 import { Button, Input, Panel, cx } from "@/components";
 import styles from "./borrower.module.css";
+import { DatePicker } from "@/components/ui/date-picker";
 
 type Draft = {
   purpose: string;
@@ -217,6 +217,9 @@ export function LoanForm({
     (total, item) => total + (draft.items[item.id] ?? 0),
     0,
   );
+  const draftDuration = draft.startDate && draft.endDate
+    ? Math.round((new Date(`${draft.endDate}T00:00:00Z`).getTime() - new Date(`${draft.startDate}T00:00:00Z`).getTime()) / 86_400_000) + 1
+    : null;
 
   function setItemQuantity(
     id: string,
@@ -527,27 +530,46 @@ export function LoanForm({
           </div>
         </Panel>
         {step > 1 && (
-          <aside className={styles.draftSummary}>
-            <span>RINGKASAN DRAF</span>
-            <strong>{selectedQuantity} item dipilih</strong>
-            <p>
-              {selected.length
-                ? selected
-                    .map((item) => `${item.name} (${draft.items[item.id]})`)
-                    .join(", ")
-                : "Belum ada barang atau fasilitas dipilih."}
-            </p>
-            {draft.startDate && (
-              <small>
-                {draft.startDate} s.d.{" "}
-                {draft.endDate || "tanggal selesai belum diisi"}
-              </small>
-            )}
+          <aside className={styles.draftSummary} aria-label="Ringkasan draf peminjaman">
+            <div className={styles.draftSummaryHeader}>
+              <span>RINGKASAN DRAF</span>
+              <strong>{selectedQuantity} barang <small>· {selected.length} jenis</small></strong>
+            </div>
+            <div className={styles.draftSummarySection}>
+              <h3>Barang dipilih</h3>
+              {selected.length ? (
+                <ul className={styles.draftSummaryItems}>
+                  {selected.map((item) => (
+                    <li key={item.id}>
+                      <span><strong>{item.name}</strong><small>{item.code}</small></span>
+                      <b>{draft.items[item.id]} {item.unit}</b>
+                    </li>
+                  ))}
+                </ul>
+              ) : <p>Belum ada barang atau fasilitas dipilih.</p>}
+            </div>
+            <div className={styles.draftSummarySection}>
+              <h3>Jadwal penggunaan</h3>
+              <dl className={styles.draftSummaryFacts}>
+                <div><dt>Mulai</dt><dd>{draft.startDate ? formatDraftDate(draft.startDate) : "Belum diisi"}</dd></div>
+                <div><dt>Selesai</dt><dd>{draft.endDate ? formatDraftDate(draft.endDate) : "Belum diisi"}</dd></div>
+              </dl>
+              {draftDuration && draftDuration > 0 && <p className={styles.draftSummaryDuration}>{draftDuration} hari kalender</p>}
+            </div>
+            <div className={styles.draftSummarySection}>
+              <h3>Keperluan</h3>
+              <p>{draft.purpose || "Belum diisi"}</p>
+              <small>Lokasi: {draft.location || "Belum diisi"}</small>
+            </div>
           </aside>
         )}
       </div>
     </div>
   );
+}
+
+function formatDraftDate(value: string) {
+  return new Intl.DateTimeFormat("id-ID", { day: "numeric", month: "short", year: "numeric" }).format(new Date(`${value}T00:00:00`));
 }
 
 function DateField({
@@ -565,28 +587,7 @@ function DateField({
   error?: string;
   onChange: (value: string) => void;
 }) {
-  return (
-    <label className={styles.dateField}>
-      <span>
-        {label} <b>*</b>
-      </span>
-      <span
-        className={cx(styles.dateControl, error && styles.dateControlError)}
-      >
-        <CalendarDays size={17} aria-hidden="true" />
-        <input
-          type="date"
-          min={min}
-          max={max}
-          required
-          value={value}
-          aria-invalid={Boolean(error)}
-          onChange={(event) => onChange(event.target.value)}
-        />
-      </span>
-      {error && <small role="alert">{error}</small>}
-    </label>
-  );
+  return <DatePicker label={label} min={min} max={max} required value={value} error={error} onChange={onChange} />;
 }
 
 function FileField({

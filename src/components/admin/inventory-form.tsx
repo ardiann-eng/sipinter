@@ -3,7 +3,7 @@
 import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Button, Panel } from "@/components";
+import { Button, Panel, Select } from "@/components";
 import type { InventoryItem } from "@/lib/view-models";
 import s from "./admin.module.css";
 
@@ -54,7 +54,7 @@ export function InventoryForm({ item }: { item?: InventoryItem }) {
       <div className={s.formGrid}>
         <label className="field"><span className="field__label">Nama barang / fasilitas *</span><input className="input" name="name" defaultValue={item?.name} maxLength={255} required /></label>
         <label className="field"><span className="field__label">Kode barang *</span><input className="input" name="itemCode" defaultValue={item?.code} placeholder="PRL-KRS-001" maxLength={64} required /></label>
-        <label className="field"><span className="field__label">Kategori *</span><select className="select" name="categoryCode" defaultValue={item?.category === "Ruangan Pertemuan" ? "RUANGAN" : item?.category === "Perlengkapan Acara" ? "PERLENGKAPAN_ACARA" : "KENDARAAN"}><option value="KENDARAAN">Kendaraan Dinas</option><option value="RUANGAN">Ruangan Pertemuan</option><option value="PERLENGKAPAN_ACARA">Perlengkapan Acara</option></select></label>
+        <Select label="Kategori" required name="categoryCode" defaultValue={item?.category === "Ruangan Pertemuan" ? "RUANGAN" : item?.category === "Perlengkapan Acara" ? "PERLENGKAPAN_ACARA" : "KENDARAAN"}><option value="KENDARAAN">Kendaraan Dinas</option><option value="RUANGAN">Ruangan Pertemuan</option><option value="PERLENGKAPAN_ACARA">Perlengkapan Acara</option></Select>
         <label className="field"><span className="field__label">Nomor polisi</span><input className="input" name="registrationNumber" defaultValue={item?.category === "Kendaraan Dinas" ? item.registrationNumber : ""} placeholder="Khusus kendaraan, contoh: DD 7001 TF" maxLength={32} /></label>
         <label className="field"><span className="field__label">Tahun pengadaan *</span><input className="input" name="procurementYear" type="number" min="1900" max={new Date().getFullYear()} defaultValue={item?.acquisitionDate?.slice(0, 4) ?? new Date().getFullYear()} required /></label>
         <label className={`field ${s.full}`}><span className="field__label">Foto utama</span><input className="input" name="mainPhoto" defaultValue={item?.imageUrl} placeholder="/barang-peminjaman/nama-file.jpg" /><small>Gunakan path aset publik yang tersedia.</small></label>
@@ -64,8 +64,8 @@ export function InventoryForm({ item }: { item?: InventoryItem }) {
       <div className={s.formGrid}>
         <label className="field"><span className="field__label">Jumlah tersedia *</span><input className="input" name="totalQuantity" type="number" min="1" defaultValue={item?.totalStock ?? 1} required /></label>
         <label className="field"><span className="field__label">Satuan *</span><input className="input" name="unit" defaultValue={item?.unit ?? "unit"} maxLength={50} required /></label>
-        <label className="field"><span className="field__label">Kondisi *</span><select className="select" name="condition" defaultValue={item?.condition ?? "GOOD"}><option value="GOOD">Baik</option><option value="LIGHTLY_DAMAGED">Rusak ringan</option><option value="HEAVILY_DAMAGED">Rusak berat</option><option value="LOST">Hilang</option></select></label>
-        {item && <label className="field"><span className="field__label">Status operasional *</span><select className="select" name="status" defaultValue={item.status === "INACTIVE" ? "INACTIVE" : "AVAILABLE"}><option value="AVAILABLE">Aktif</option><option value="INACTIVE">Nonaktif</option></select></label>}
+        <Select label="Kondisi" required name="condition" defaultValue={item?.condition ?? "GOOD"}><option value="GOOD">Baik</option><option value="LIGHTLY_DAMAGED">Rusak ringan</option><option value="HEAVILY_DAMAGED">Rusak berat</option><option value="LOST">Hilang</option></Select>
+        {item && <Select label="Status operasional" required name="status" defaultValue={item.status === "INACTIVE" ? "INACTIVE" : "AVAILABLE"}><option value="AVAILABLE">Aktif</option><option value="INACTIVE">Nonaktif</option></Select>}
         <label className="field"><span className="field__label">Lokasi penyimpanan *</span><input className="input" name="location" defaultValue={item?.location ?? "Balai Kota Makassar"} maxLength={255} required /></label>
         <label className={`field ${s.full}`}><span className="field__label">Deskripsi</span><textarea className={s.textarea} name="description" defaultValue={item?.description} maxLength={2000} /></label>
       </div>

@@ -28,7 +28,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     });
     const title = target === BorrowingStatus.APPROVED ? "Pengajuan disetujui" : target === BorrowingStatus.REJECTED ? "Pengajuan ditolak" : target === BorrowingStatus.REVISION_REQUIRED ? "Pengajuan perlu revisi" : "Pengajuan diteruskan untuk persetujuan";
     try {
-      await db.notification.create({ data: { userId: updated.borrowerId, type: target === BorrowingStatus.REJECTED || target === BorrowingStatus.REVISION_REQUIRED ? NotificationType.WARNING : NotificationType.INFO, title, message: body.note?.trim() || `Status ${updated.registrationNumber} telah diperbarui.`, link: `/peminjam/peminjaman/${updated.id}` } });
+      await db.notification.create({ data: { userId: updated.borrowerId, type: target === BorrowingStatus.REJECTED || target === BorrowingStatus.REVISION_REQUIRED ? NotificationType.WARNING : NotificationType.INFO, title, message: target === BorrowingStatus.APPROVED ? `Pengajuan ${updated.registrationNumber} disetujui Sekda. Surat dengan TTD QR tersedia pada detail peminjaman.` : body.note?.trim() || `Status ${updated.registrationNumber} telah diperbarui.`, link: `/peminjam/peminjaman/${updated.id}` } });
       if (target === BorrowingStatus.WAITING_SEKDA_APPROVAL) {
         const approvers = await db.user.findMany({
           where: { role: Role.APPROVER, status: UserStatus.ACTIVE },
@@ -42,6 +42,23 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
               title: "Permohonan menunggu persetujuan",
               message: `${updated.registrationNumber} telah lolos verifikasi administrator.`,
               link: `/sekda/menunggu/${updated.id}`,
+            })),
+          });
+        }
+      }
+      if (target === BorrowingStatus.APPROVED) {
+        const admins = await db.user.findMany({
+          where: { role: Role.ADMIN, status: UserStatus.ACTIVE },
+          select: { id: true },
+        });
+        if (admins.length) {
+          await db.notification.createMany({
+            data: admins.map((admin) => ({
+              userId: admin.id,
+              type: NotificationType.ACTION_REQUIRED,
+              title: "Peminjaman disetujui Sekda",
+              message: `${updated.registrationNumber} disetujui. Surat dengan TTD QR tersedia untuk proses penyerahan.`,
+              link: "/admin/penyerahan",
             })),
           });
         }

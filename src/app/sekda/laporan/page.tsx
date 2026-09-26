@@ -3,6 +3,7 @@ import { BarChart3, CalendarDays, CheckCircle2, Clock3, TriangleAlert, XCircle }
 import { Badge, PageHeader, Panel, Stat } from "@/components";
 import { requireRole } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { APP_STARTED_AT } from "@/lib/app-start";
 
 export const metadata = { title: "Laporan Persetujuan" };
 
@@ -23,13 +24,14 @@ function durationLabel(milliseconds: number) {
 export default async function ApprovalReportPage() {
   await requireRole([Role.APPROVER]);
   const now = new Date();
-  const start = new Date(now.getFullYear(), now.getMonth(), 1);
+  const calendarStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const start = calendarStart > APP_STARTED_AT ? calendarStart : APP_STARTED_AT;
   const end = new Date(now.getFullYear(), now.getMonth() + 1, 1);
   const monthLabel = new Intl.DateTimeFormat("id-ID", { month: "long", year: "numeric" }).format(now);
   const [reviewed, decisions, pending] = await Promise.all([
     db.borrowingRequest.findMany({ where: { verifiedAt: { gte: start, lt: end } }, include: { borrower: { include: { skpd: true } }, approvalRecords: true } }),
     db.approvalRecord.findMany({ where: { decidedAt: { gte: start, lt: end } }, include: { borrowingRequest: { select: { verifiedAt: true } } }, orderBy: { decidedAt: "asc" } }),
-    db.borrowingRequest.findMany({ where: { status: BorrowingStatus.WAITING_SEKDA_APPROVAL }, select: { borrowDate: true } }),
+    db.borrowingRequest.findMany({ where: { status: BorrowingStatus.WAITING_SEKDA_APPROVAL, verifiedAt: { gte: APP_STARTED_AT } }, select: { borrowDate: true } }),
   ]);
   const approved = decisions.filter((record) => record.decision === ApprovalDecision.APPROVED).length;
   const rejected = decisions.length - approved;

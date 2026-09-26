@@ -48,7 +48,7 @@
 .details dd { color: var(--ink); font-weight: 650; margin: 0; overflow-wrap: anywhere; }
 .logout { background: var(--surface); border: 1px solid var(--danger); border-radius: 8px; color: var(--danger); font-weight: 750; padding: 9px 15px; }
 .state { background: var(--canvas); display: grid; min-height: 100svh; padding: 20px; place-items: center; }
-.stateCard { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; border-top: 4px solid var(--maroon); box-shadow: var(--shadow); max-width: 520px; padding: clamp(30px, 6vw, 55px); text-align: center; }
+.stateCard { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); max-width: 520px; padding: clamp(30px, 6vw, 55px); text-align: center; }
 .stateIcon { background: var(--danger-soft); border-radius: 50%; color: var(--danger); display: grid; height: 64px; margin: 0 auto 20px; place-items: center; width: 64px; }
 .stateCard h1 { color: var(--primary-deep); font-size: 30px; letter-spacing: -.02em; margin-bottom: 10px; }
 .stateCard p { color: var(--muted); margin-bottom: 25px; }

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components";
+import styles from "./verification-actions.module.css";
 
 export function VerificationActions({ requestId }: { requestId: string }) {
   const router = useRouter();
@@ -34,13 +35,19 @@ export function VerificationActions({ requestId }: { requestId: string }) {
     }
   }
 
-  return <>
-    <label className="field"><span className="field__label">Catatan untuk pemohon / Sekda *</span><textarea className="textarea" value={note} onChange={(event) => setNote(event.target.value)} placeholder="Wajib diisi untuk permintaan revisi atau penolakan." aria-invalid={Boolean(error)} aria-describedby={error ? "verification-action-error" : undefined} /></label>
-    {error && <p id="verification-action-error" role="alert">{error}</p>}
-    <div className="actions-row">
-      <Button variant="danger" loading={busy === "REJECT"} onClick={() => transition("REJECT")}>Tolak</Button>
-      <Button variant="outline" loading={busy === "REQUEST_REVISION"} onClick={() => transition("REQUEST_REVISION")}>Minta revisi</Button>
-      <Button loading={busy === "FORWARD_TO_APPROVER"} onClick={() => transition("FORWARD_TO_APPROVER")}>Teruskan ke Sekda</Button>
+  return <div className={styles.decisionForm}>
+    <label className={`field ${styles.noteField}`}>
+      <span className="field__label">Catatan untuk pemohon / Sekda</span>
+      <textarea className="textarea" value={note} onChange={(event) => setNote(event.target.value)} placeholder="Tulis hasil pemeriksaan atau alasan keputusan..." aria-invalid={Boolean(error)} aria-describedby={error ? "verification-action-error" : "verification-action-hint"} />
+      <span className="field__hint" id="verification-action-hint">Wajib untuk revisi atau penolakan. Opsional saat diteruskan.</span>
+      {error && <span className="field__error" id="verification-action-error" role="alert">{error}</span>}
+    </label>
+    <div className={styles.decisionActions}>
+      <Button loading={busy === "FORWARD_TO_APPROVER"} disabled={busy !== null} onClick={() => transition("FORWARD_TO_APPROVER")}>Teruskan ke Sekda</Button>
+      <div className={styles.secondaryActions}>
+        <Button variant="outline" loading={busy === "REQUEST_REVISION"} disabled={busy !== null} onClick={() => transition("REQUEST_REVISION")}>Minta revisi</Button>
+        <Button variant="danger" loading={busy === "REJECT"} disabled={busy !== null} onClick={() => transition("REJECT")}>Tolak</Button>
+      </div>
     </div>
-  </>;
+  </div>;
 }

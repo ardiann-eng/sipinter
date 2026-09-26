@@ -102,7 +102,7 @@ export const returnSubmissionSchema = z.object({
     originalName: optionalText(255),
     mimeType: z.enum(["application/pdf", "image/jpeg", "image/png"]).optional(),
     size: z.number().int().positive().max(5 * 1024 * 1024).optional(),
-  })).min(2, "Minimal 2 foto").max(4, "Maksimal 4 foto"),
+  })).max(4, "Maksimal 4 foto"),
 });
 
 export const returnVerificationSchema = z.object({

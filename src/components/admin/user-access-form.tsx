@@ -2,7 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components";
+import { Button, Select } from "@/components";
 import s from "./admin.module.css";
 
 export function UserAccessForm({ id, name, role, status }: { id: string; name: string; role: "BORROWER" | "APPROVER"; status: "ACTIVE" | "INACTIVE" }) {
@@ -23,8 +23,8 @@ export function UserAccessForm({ id, name, role, status }: { id: string; name: s
     } finally { setBusy(false); }
   }
   return <form className={s.accessForm} onSubmit={submit} aria-busy={busy}>
-    <select className="select" name="role" defaultValue={role} aria-label={`Peran ${name}`}><option value="BORROWER">Peminjam</option><option value="APPROVER">Sekda</option></select>
-    <select className="select" name="status" defaultValue={status} aria-label={`Status akun ${name}`}><option value="ACTIVE">Aktif</option><option value="INACTIVE">Nonaktif</option></select>
+    <Select name="role" defaultValue={role} aria-label={`Peran ${name}`}><option value="BORROWER">Peminjam</option><option value="APPROVER">Sekda</option></Select>
+    <Select name="status" defaultValue={status} aria-label={`Status akun ${name}`}><option value="ACTIVE">Aktif</option><option value="INACTIVE">Nonaktif</option></Select>
     <Button type="submit" size="sm" loading={busy}>Simpan</Button>
     {error && <small className={s.error} role="alert">{error}</small>}
   </form>;

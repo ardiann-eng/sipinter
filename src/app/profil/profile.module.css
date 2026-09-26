@@ -258,7 +258,7 @@
   }
   .side {
     border-left: 0;
-    border-top: 1px solid var(--line);
+    background: var(--surface-soft);
     grid-template-columns: 1fr 1fr;
     grid-template-rows: auto;
   }

@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { Camera, Send } from "lucide-react";
-import { Button, Input, Panel, Select } from "@/components";
+import { Button, Panel, Select } from "@/components";
+import { DatePicker } from "@/components/ui/date-picker";
 import styles from "./borrower.module.css";
 
 const evidenceLabels = [
@@ -37,8 +38,8 @@ export function ReturnForm({ requestId, number, itemCount, borrowDate }: { reque
     const files = photos.filter((photo): photo is File => Boolean(photo));
     if (!condition) next.condition = "Kondisi akhir wajib dipilih.";
     if (!returnedAt) next.returnedAt = "Tanggal pengembalian wajib diisi.";
-    if (files.length < 2 || files.length > 4)
-      next.photos = "Unggah 2-4 foto bukti kondisi kendaraan.";
+    if (files.length > 4)
+      next.photos = "Maksimal 4 foto bukti kondisi kendaraan.";
     files.forEach((file) => {
       if (!allowedPhotoTypes.includes(file.type))
         next.photos = "Foto harus berformat JPG atau PNG.";
@@ -91,14 +92,13 @@ export function ReturnForm({ requestId, number, itemCount, borrowDate }: { reque
             <option value="HEAVILY_DAMAGED">Rusak berat</option>
             <option value="LOST">Hilang / tidak lengkap</option>
           </Select>
-          <Input
+          <DatePicker
             label="Tanggal pengembalian"
-            type="date"
             required
             min={borrowDate}
             max={today}
             value={returnedAt}
-            onChange={(event) => setReturnedAt(event.target.value)}
+            onChange={setReturnedAt}
             error={errors.returnedAt}
           />
           <div className={`${styles.field} ${styles.wide}`}>
@@ -114,7 +114,7 @@ export function ReturnForm({ requestId, number, itemCount, borrowDate }: { reque
       </Panel>
       <Panel
         title="Bukti foto"
-        description="Wajib 2-4 foto. Gunakan label bukti berikut agar verifikasi jelas."
+        description="Opsional, maksimal 4 foto. Foto yang dikirim dapat dilihat administrator dan Sekda."
       >
         <div className={styles.photoGrid}>
           {evidenceLabels.map((label, index) => (
@@ -126,7 +126,7 @@ export function ReturnForm({ requestId, number, itemCount, borrowDate }: { reque
               <Camera size={20} />
               <strong>{label}</strong>
               <span className={styles.muted}>
-                {index < 2 ? "Wajib" : "Opsional"} · JPG/PNG · maksimal 5 MB
+                Opsional · JPG/PNG · maksimal 5 MB
               </span>
               <input
                 id={`photo-${index}`}

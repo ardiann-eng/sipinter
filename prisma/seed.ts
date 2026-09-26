@@ -1,8 +1,6 @@
 import { PrismaLibSQL } from "@prisma/adapter-libsql";
 import {
-  BorrowingStatus,
   ItemCondition,
-  NotificationType,
   PrismaClient,
   Role,
 } from "@prisma/client";
@@ -381,7 +379,6 @@ async function main() {
         "Tenda kegiatan untuk kebutuhan acara luar ruangan di lingkungan Pemerintah Kota Makassar.",
     },
   ];
-  const seededItems = [];
   for (const entry of items) {
     const { categoryCode, legacyItemCode, ...item } = entry;
     const categoryId = categories.get(categoryCode);
@@ -394,11 +391,8 @@ async function main() {
       categoryId,
       skpdId: setda.id,
     };
-    seededItems.push(
-      existing
-        ? await prisma.item.update({ where: { id: existing.id }, data })
-        : await prisma.item.create({ data }),
-    );
+    if (existing) await prisma.item.update({ where: { id: existing.id }, data });
+    else await prisma.item.create({ data });
   }
   await prisma.item.updateMany({
     where: {
@@ -417,57 +411,27 @@ async function main() {
     data: { status: "INACTIVE", availableQuantity: 0 },
   });
 
-  const borrower = users.get(Role.BORROWER);
-  if (!borrower) throw new Error("Akun pegawai seed gagal dibuat");
-  await prisma.borrowingRequest.upsert({
-    where: { registrationNumber: "SIPINTER/PMK/VII/2026/00128" },
-    update: {},
-    create: {
-      registrationNumber: "SIPINTER/PMK/VII/2026/00128",
-      borrowerId: borrower.id,
-      skpdId: bpkad.id,
-      purpose: "Kegiatan Pemerintah Kota Makassar",
-      activityLocation: "Balai Kota Makassar",
-      borrowDate: new Date("2026-07-21T00:00:00.000Z"),
-      plannedReturnDate: new Date("2026-07-23T00:00:00.000Z"),
-      ktpFile: "https://demo.invalid/sipinter/ktp-ahmad-ramadhan.pdf",
-      approvalLetterFile:
-        "https://demo.invalid/sipinter/surat-persetujuan-00128.pdf",
-      status: BorrowingStatus.DRAFT,
-      items: {
-        create: seededItems.slice(0, 2).map((item) => ({
-          itemId: item.id,
-          quantity: 1,
-          initialCondition: ItemCondition.GOOD,
-        })),
-      },
-    },
+  // Hapus data contoh dari seed versi lama tanpa menyentuh transaksi nyata.
+  await prisma.notification.deleteMany({
+    where: { createdAt: { lt: new Date("2026-09-27T00:00:00+08:00") }, title: { in: [
+      "Perbaiki dokumen pengajuan",
+      "Pengembalian jatuh tempo besok",
+      "Pengajuan sedang diverifikasi",
+      "2 pengajuan mendekati batas layanan",
+      "3 pengembalian perlu diverifikasi",
+      "4 pengajuan menunggu persetujuan Sekda",
+      "4 keputusan menunggu persetujuan",
+      "Pengembalian terlambat perlu perhatian",
+      "Administrasi pengajuan telah lengkap",
+    ] } },
   });
-
-  const notificationSeeds = [
-    { role: Role.BORROWER, type: NotificationType.ACTION_REQUIRED, title: "Perbaiki dokumen pengajuan", message: "Surat tugas untuk SIPINTER/PMK/VII/2026/00110 perlu ditandatangani pimpinan sebelum dapat diproses.", link: "/peminjam/peminjaman/borrow-007" },
-    { role: Role.BORROWER, type: NotificationType.WARNING, title: "Pengembalian jatuh tempo besok", message: "Bus Penumpang 25 Seat perlu dikembalikan beserta bukti foto kondisi akhir kendaraan.", link: "/peminjam/pengembalian/borrow-005" },
-    { role: Role.BORROWER, type: NotificationType.WAITING, title: "Pengajuan sedang diverifikasi", message: "Petugas sedang memeriksa kelengkapan dokumen pengajuan Anda.", link: "/peminjam/peminjaman/borrow-001" },
-    { role: Role.ADMIN, type: NotificationType.WARNING, title: "2 pengajuan mendekati batas layanan", message: "Dua permohonan belum diverifikasi dan akan melewati target layanan hari ini.", link: "/admin/verifikasi" },
-    { role: Role.ADMIN, type: NotificationType.ACTION_REQUIRED, title: "3 pengembalian perlu diverifikasi", message: "Bukti foto dan kondisi akhir kendaraan menunggu pemeriksaan petugas.", link: "/admin/pengembalian" },
-    { role: Role.ADMIN, type: NotificationType.WAITING, title: "4 pengajuan menunggu persetujuan Sekda", message: "Verifikasi administrasi telah selesai dan keputusan pimpinan masih diperlukan.", link: "/admin/verifikasi" },
-    { role: Role.APPROVER, type: NotificationType.ACTION_REQUIRED, title: "4 keputusan menunggu persetujuan", message: "Permohonan telah diverifikasi administrator dan membutuhkan keputusan Anda.", link: "/sekda/menunggu" },
-    { role: Role.APPROVER, type: NotificationType.WARNING, title: "Pengembalian terlambat perlu perhatian", message: "Satu peminjaman melewati batas waktu pengembalian lebih dari 24 jam.", link: "/sekda/laporan" },
-    { role: Role.APPROVER, type: NotificationType.WAITING, title: "Administrasi pengajuan telah lengkap", message: "Permohonan rapat koordinasi perangkat daerah siap menunggu keputusan pimpinan.", link: "/sekda/menunggu" },
-  ];
-  for (const notification of notificationSeeds) {
-    const { role, ...data } = notification;
-    const user = users.get(role);
-    if (!user) continue;
-    const existing = await prisma.notification.findFirst({
-      where: { userId: user.id, title: data.title, readAt: null },
-      select: { id: true },
-    });
-    if (!existing) await prisma.notification.create({ data: { ...data, userId: user.id } });
-  }
+  await prisma.borrowingRequest.deleteMany({
+    where: { registrationNumber: "SIPINTER/PMK/VII/2026/00128", status: "DRAFT" },
+  });
+  // Seed hanya menyiapkan akun dan inventaris. Riwayat serta notifikasi berasal dari transaksi nyata.
 
   console.info(
-    "Seed SIPINTER selesai: SKPD, tiga akun demo, inventaris, dan SIPINTER/PMK/VII/2026/00128 dibuat.",
+    "Seed SIPINTER selesai: SKPD, akun akses, dan inventaris dibuat.",
   );
 }
 

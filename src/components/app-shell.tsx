@@ -77,7 +77,7 @@ export function AppShell({
     role: "BORROWER",
     unit: "Dinas Komunikasi dan Informatika",
   },
-  notificationCount = 3,
+  notificationCount = 0,
 }: {
   children: React.ReactNode;
   user?: ShellUser;

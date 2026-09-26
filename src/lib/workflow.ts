@@ -334,8 +334,8 @@ export async function submitReturn(
     context?: RequestContext;
   },
 ) {
-  if (input.photos.length < 2 || input.photos.length > 4) {
-    throw new WorkflowError("Foto pengembalian wajib 2-4 foto");
+  if (input.photos.length > 4) {
+    throw new WorkflowError("Maksimal 4 foto pengembalian");
   }
   return db.$transaction(async (tx) => {
     const request = await tx.borrowingRequest.findUnique({ where: { id: requestId } });

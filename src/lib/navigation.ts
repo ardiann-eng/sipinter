@@ -24,9 +24,9 @@ export interface NavigationItem {
 export const navigationByRole: Record<UserRole, NavigationItem[]> = {
   ADMIN: [
     { label: "Ringkasan Operasional", href: "/admin/ringkasan", icon: "dashboard" },
-    { label: "Verifikasi Peminjaman", href: "/admin/verifikasi", icon: "request", badge: 7 },
+    { label: "Verifikasi Peminjaman", href: "/admin/verifikasi", icon: "request" },
     { label: "Penyerahan Kendaraan", href: "/admin/penyerahan", icon: "handover" },
-    { label: "Verifikasi Pengembalian", href: "/admin/pengembalian", icon: "return", badge: 3 },
+    { label: "Verifikasi Pengembalian", href: "/admin/pengembalian", icon: "return" },
     { label: "Master Inventaris", href: "/admin/barang", icon: "inventory" },
     { label: "Laporan Penggunaan", href: "/admin/laporan", icon: "report" },
     { label: "Manajemen Pengguna", href: "/admin/pengguna", icon: "users" },
@@ -41,7 +41,7 @@ export const navigationByRole: Record<UserRole, NavigationItem[]> = {
     { label: "Riwayat", href: "/peminjam/riwayat", icon: "history" },
   ],
   APPROVER: [
-    { label: "Menunggu Persetujuan", href: "/sekda/menunggu", icon: "request", badge: 4 },
+    { label: "Menunggu Persetujuan", href: "/sekda/menunggu", icon: "request" },
     { label: "Riwayat Persetujuan", href: "/sekda/riwayat", icon: "history" },
     { label: "Laporan Ringkas", href: "/sekda/laporan", icon: "report" },
   ],
@@ -50,7 +50,7 @@ export const navigationByRole: Record<UserRole, NavigationItem[]> = {
 export const mobileNavigationByRole: Record<UserRole, NavigationItem[]> = {
   ADMIN: [
     { label: "Ringkasan", href: "/admin/ringkasan", icon: "dashboard" },
-    { label: "Tugas", href: "/admin/verifikasi", icon: "request", badge: 7 },
+    { label: "Tugas", href: "/admin/verifikasi", icon: "request" },
     { label: "Inventaris", href: "/admin/barang", icon: "inventory" },
     { label: "Laporan", href: "/admin/laporan", icon: "report" },
     { label: "Menu", href: "/admin/menu", icon: "more" },
@@ -62,7 +62,7 @@ export const mobileNavigationByRole: Record<UserRole, NavigationItem[]> = {
     { label: "Pengembalian", href: "/peminjam/pengembalian", icon: "return" },
   ],
   APPROVER: [
-    { label: "Menunggu", href: "/sekda/menunggu", icon: "request", badge: 4 },
+    { label: "Menunggu", href: "/sekda/menunggu", icon: "request" },
     { label: "Riwayat", href: "/sekda/riwayat", icon: "history" },
     { label: "Ringkasan", href: "/sekda/laporan", icon: "report" },
   ],

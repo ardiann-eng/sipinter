@@ -1,0 +1,31 @@
+.decisionForm {
+  display: grid;
+  gap: 20px;
+}
+
+.noteField {
+  gap: 9px;
+}
+
+.noteField :global(.textarea) {
+  line-height: 1.5;
+  min-height: 124px;
+}
+
+.decisionActions {
+  border-top: 1px solid var(--border-soft);
+  display: grid;
+  gap: 10px;
+  padding-top: 18px;
+}
+
+.decisionActions :global(.button) {
+  min-height: 44px;
+  width: 100%;
+}
+
+.secondaryActions {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
