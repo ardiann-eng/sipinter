@@ -13,7 +13,7 @@ const modules = [
 
 export default function AdminMenuPage() {
   return <>
-    <PageHeader eyebrow="Administrasi SIPINTAR" title="Menu lainnya" description="Akses modul administrasi dan pengawasan yang tidak tampil pada navigasi bawah." />
+    <PageHeader eyebrow="Administrasi SIPINTER" title="Menu lainnya" description="Akses modul administrasi dan pengawasan yang tidak tampil pada navigasi bawah." />
     <Panel title="Modul administrasi">
       <div className={s.menuGrid}>
         {modules.map(({ href, label, detail, icon: Icon }) => <Link className={s.menuLink} href={href} key={href}>

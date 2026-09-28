@@ -85,7 +85,7 @@ function LoginContent() {
         </div>
         <div className={styles.identityBody}>
           <p className={styles.kicker}>LAYANAN INTERNAL PEMERINTAHAN</p>
-          <h1 id="brand-title">SIPINTAR</h1>
+          <h1 id="brand-title">SIPINTER</h1>
           <p className={styles.fullName}>
             Sistem Informasi Peminjaman Inventaris Kantor Terintegrasi
           </p>
@@ -104,13 +104,13 @@ function LoginContent() {
           <div className={styles.mobileBrand}>
             <LogoGroup className={styles.mobileLogo} />
             <div>
-              <strong>SIPINTAR</strong>
+              <strong>SIPINTER</strong>
               <span>Sistem Informasi Peminjaman Inventaris Kantor Terintegrasi</span>
             </div>
           </div>
           <div className={styles.heading}>
             <h2>
-              Masuk ke <strong>SIPINTAR</strong>
+              Masuk ke <strong>SIPINTER</strong>
             </h2>
           </div>
           <p className={styles.intro}>
@@ -167,7 +167,7 @@ function LoginContent() {
                 <input name="remember" type="checkbox" />
                 <span>Ingat saya di perangkat ini</span>
               </label>
-              <a href="mailto:helpdesk@makassarkota.go.id?subject=Reset%20kata%20sandi%20SIPINTAR">
+              <a href="mailto:helpdesk@makassarkota.go.id?subject=Reset%20kata%20sandi%20SIPINTER">
                 Lupa kata sandi?
               </a>
             </div>
@@ -195,7 +195,7 @@ function LoginContent() {
             <div>
               <strong>Belum memiliki akun?</strong>
               <span>
-                Daftar sebagai peminjam untuk langsung menggunakan SIPINTAR.
+                Daftar sebagai peminjam untuk langsung menggunakan SIPINTER.
               </span>
             </div>
             <Link href="/daftar">Daftar</Link>

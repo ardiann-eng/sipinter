@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
       && (!isWithin(callback, "/sekda") || user.role === "APPROVER");
     return NextResponse.json({ redirectTo: allowedCallback ? callback : roleHome[user.role] });
   } catch (error) {
-    console.error("Login SIPINTAR gagal", error);
+    console.error("Login SIPINTER gagal", error);
     return NextResponse.json(
       { error: "Layanan autentikasi belum tersedia. Hubungi helpdesk bila masalah berlanjut." },
       { status: 503 },

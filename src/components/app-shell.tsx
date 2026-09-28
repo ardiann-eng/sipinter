@@ -171,7 +171,7 @@ export function AppShell({
             <strong>{roleLabels[user.role]}</strong>
           </div>
           <Link className="shell-header__brand" href={roleHome[user.role]}>
-            SIPINTAR
+            SIPINTER
           </Link>
           <div className="shell-header__actions">
             <Link
@@ -322,7 +322,7 @@ function Brand({ href }: { href: string }) {
         </span>
       </span>
       <span className="brand__text">
-        <strong>SIPINTAR</strong>
+        <strong>SIPINTER</strong>
         <small>Sistem Informasi Peminjaman Inventaris Kantor Terintegrasi</small>
         <em>Pemkot Makassar</em>
       </span>

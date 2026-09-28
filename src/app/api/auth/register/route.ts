@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
       db.user.findFirst({ where: { OR: [{ nip: data.nip }, { email: data.email }, { nikHash }] }, select: { id: true } }),
     ]);
     if (!skpd) return NextResponse.json({ error: "Instansi tidak ditemukan. Pilih instansi dari daftar." }, { status: 400 });
-    if (existingUser) return NextResponse.json({ error: "NIP, NIK, atau email sudah terdaftar sebagai akun SIPINTAR." }, { status: 409 });
+    if (existingUser) return NextResponse.json({ error: "NIP, NIK, atau email sudah terdaftar sebagai akun SIPINTER." }, { status: 409 });
     const user = await db.user.create({
       data: {
         name: data.name,
@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
     });
     return NextResponse.json({ userId: user.id }, { status: 201 });
   } catch (error) {
-    console.error("Pendaftaran SIPINTAR gagal", error);
+    console.error("Pendaftaran SIPINTER gagal", error);
     return NextResponse.json({ error: "Pendaftaran belum dapat diproses. Coba kembali atau hubungi helpdesk." }, { status: 503 });
   }
 }

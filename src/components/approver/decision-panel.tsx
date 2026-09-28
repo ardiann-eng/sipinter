@@ -46,7 +46,7 @@ export function DecisionPanel({ requestId, disabled = false }: { requestId: stri
     </aside>
     <Modal open={decision !== null} onClose={() => { setDecision(null); setError(""); }} title={decision === "approve" ? "Konfirmasi persetujuan" : "Tolak permohonan"} description={decision === "approve" ? "Keputusan akan meneruskan permohonan ke proses penyiapan dan penyerahan kendaraan." : "Penolakan menghentikan proses permohonan ini."} footer={<><Button variant="ghost" onClick={() => setDecision(null)}>Batal</Button><Button variant={decision === "approve" ? "secondary" : "danger"} onClick={submit}>{decision === "approve" ? "Ya, setujui" : "Catat penolakan"}</Button></>}>
       {decision === "reject" && <label className="decision-field"><span>Alasan penolakan <b aria-hidden="true">*</b></span><textarea value={reason} onChange={(event) => { setReason(event.target.value); setError(""); }} rows={5} placeholder="Tuliskan alasan yang jelas dan dapat ditindaklanjuti pemohon..." required aria-invalid={Boolean(error)} aria-describedby={`${reasonHelpId}${error ? ` ${reasonErrorId}` : ""}`} />{error && <small id={reasonErrorId} role="alert">{error}</small>}<em id={reasonHelpId}>{reason.trim().length}/20 karakter minimum</em></label>}
-      <div className="modal-audit-warning"><AlertTriangle size={20} /><p><strong>Peringatan audit</strong>Keputusan tidak dapat diubah setelah dikonfirmasi. Identitas pemberi keputusan dan catatan akan tersimpan dalam audit log SIPINTAR.</p></div>
+      <div className="modal-audit-warning"><AlertTriangle size={20} /><p><strong>Peringatan audit</strong>Keputusan tidak dapat diubah setelah dikonfirmasi. Identitas pemberi keputusan dan catatan akan tersimpan dalam audit log SIPINTER.</p></div>
     </Modal>
   </>;
 }

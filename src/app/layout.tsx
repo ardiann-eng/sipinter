@@ -18,8 +18,8 @@ const sourceSerif = Source_Serif_4({
 
 export const metadata: Metadata = {
   title: {
-    default: "SIPINTAR",
-    template: "%s | SIPINTAR",
+    default: "SIPINTER",
+    template: "%s | SIPINTER",
   },
   description:
     "Sistem Informasi Peminjaman Inventaris Kantor Terintegrasi Pemerintah Kota Makassar",

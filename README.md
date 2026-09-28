@@ -1,6 +1,6 @@
-# SIPINTAR
+# SIPINTER
 
-SIPINTAR adalah Sistem Informasi Peminjaman Inventaris Kantor Terintegrasi Pemerintah Kota Makassar. Aplikasi mengelola katalog inventaris, pengajuan, verifikasi, persetujuan Sekretaris Daerah, penyerahan, pengembalian, laporan, dan audit berdasarkan peran.
+SIPINTER adalah Sistem Informasi Peminjaman Inventaris Kantor Terintegrasi Pemerintah Kota Makassar. Aplikasi mengelola katalog inventaris, pengajuan, verifikasi, persetujuan Sekretaris Daerah, penyerahan, pengembalian, laporan, dan audit berdasarkan peran.
 
 Status MVP: frontend responsif dan alur peminjaman kendaraan sudah terhubung ke database, mulai dari pengajuan, revisi, verifikasi admin, persetujuan Sekda, penyerahan, pengembalian, penanganan masalah, hingga penyelesaian. Autentikasi, otorisasi server, schema Turso/libSQL, storage lokal, audit, reservasi jadwal, dan validasi transisi status tersedia.
 
