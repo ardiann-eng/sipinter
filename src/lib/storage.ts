@@ -1,7 +1,9 @@
 import { randomUUID } from "node:crypto";
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
-import type { StoredFile } from "./types";
+import type { PrismaClient } from "@prisma/client";
+import { db } from "./db";
+import { WorkflowError, type StoredFile } from "./types";
 
 export interface Storage {
   put(file: File): Promise<StoredFile>;
@@ -9,7 +11,11 @@ export interface Storage {
   delete(key: string): Promise<void>;
 }
 
-export const MAX_UPLOAD_SIZE = 5 * 1024 * 1024;
+// Vercel rejects request bodies over 4.5 MB. Keep room for multipart fields.
+export const MAX_UPLOAD_SIZE = 4 * 1024 * 1024;
+export const MAX_REQUEST_UPLOAD_SIZE = 4 * 1024 * 1024;
+const CHUNK_SIZE = 512 * 1024;
+const STORAGE_KEY = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\.(?:pdf|jpg|png)$/i;
 
 const FILE_TYPES = {
   "application/pdf": { extension: ".pdf", matches: (bytes: Buffer) => bytes.subarray(0, 5).equals(Buffer.from("%PDF-")) },
@@ -18,11 +24,11 @@ const FILE_TYPES = {
 } as const;
 
 export function validateUpload(bytes: Buffer, declaredMimeType: string): keyof typeof FILE_TYPES {
-  if (!bytes.length) throw new Error("File kosong");
-  if (bytes.length > MAX_UPLOAD_SIZE) throw new Error("Ukuran file maksimal 5 MB");
+  if (!bytes.length) throw new WorkflowError("File kosong");
+  if (bytes.length > MAX_UPLOAD_SIZE) throw new WorkflowError("Ukuran file maksimal 4 MB");
   const declared = FILE_TYPES[declaredMimeType as keyof typeof FILE_TYPES];
-  if (!declared) throw new Error("Format file tidak didukung");
-  if (!declared.matches(bytes)) throw new Error("Isi file tidak sesuai MIME type");
+  if (!declared) throw new WorkflowError("Format file tidak didukung");
+  if (!declared.matches(bytes)) throw new WorkflowError("Isi file tidak sesuai MIME type");
   return declaredMimeType as keyof typeof FILE_TYPES;
 }
 
@@ -34,7 +40,7 @@ export class LocalStorage implements Storage {
   }
 
   private resolve(key: string): string {
-    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\.(?:pdf|jpg|png)$/i.test(key)) {
+    if (!STORAGE_KEY.test(key)) {
       throw new Error("Storage key tidak valid");
     }
     const target = path.resolve(this.root, key);
@@ -43,7 +49,7 @@ export class LocalStorage implements Storage {
   }
 
   async put(file: File): Promise<StoredFile> {
-    if (file.size > MAX_UPLOAD_SIZE) throw new Error("Ukuran file maksimal 5 MB");
+    if (file.size > MAX_UPLOAD_SIZE) throw new WorkflowError("Ukuran file maksimal 4 MB");
     const bytes = Buffer.from(await file.arrayBuffer());
     const mimeType = validateUpload(bytes, file.type);
     const key = `${randomUUID()}${FILE_TYPES[mimeType].extension}`;
@@ -61,4 +67,54 @@ export class LocalStorage implements Storage {
   }
 }
 
-export const storage: Storage = new LocalStorage();
+export class DatabaseStorage implements Storage {
+  constructor(private readonly client: PrismaClient = db) {}
+
+  async put(file: File): Promise<StoredFile> {
+    if (file.size > MAX_UPLOAD_SIZE) throw new WorkflowError("Ukuran file maksimal 4 MB");
+    const bytes = Buffer.from(await file.arrayBuffer());
+    const mimeType = validateUpload(bytes, file.type);
+    const key = `${randomUUID()}${FILE_TYPES[mimeType].extension}`;
+    const originalName = path.basename(file.name);
+    await this.client.storedUpload.create({ data: { key, originalName, mimeType, size: bytes.length } });
+    try {
+      for (let index = 0, offset = 0; offset < bytes.length; index++, offset += CHUNK_SIZE) {
+        await this.client.storedUploadChunk.create({
+          data: { uploadKey: key, index, data: new Uint8Array(bytes.subarray(offset, offset + CHUNK_SIZE)) },
+        });
+      }
+    } catch (error) {
+      await this.client.storedUpload.delete({ where: { key } }).catch(() => undefined);
+      throw error;
+    }
+    return { key, size: bytes.length, mimeType, originalName };
+  }
+
+  async get(key: string): Promise<Buffer> {
+    if (!STORAGE_KEY.test(key)) throw new Error("Storage key tidak valid");
+    const upload = await this.client.storedUpload.findUnique({ where: { key }, select: { size: true } });
+    if (!upload) throw new Error("Berkas tidak ditemukan");
+    const chunks: Buffer[] = [];
+    for (let index = 0; index < Math.ceil(upload.size / CHUNK_SIZE); index++) {
+      const chunk = await this.client.storedUploadChunk.findUnique({
+        where: { uploadKey_index: { uploadKey: key, index } },
+        select: { data: true },
+      });
+      if (!chunk) throw new Error("Berkas tidak lengkap");
+      chunks.push(Buffer.from(chunk.data));
+    }
+    const bytes = Buffer.concat(chunks);
+    if (bytes.length !== upload.size) throw new Error("Ukuran berkas tidak sesuai");
+    return bytes;
+  }
+
+  async delete(key: string): Promise<void> {
+    if (!STORAGE_KEY.test(key)) throw new Error("Storage key tidak valid");
+    await this.client.storedUpload.deleteMany({ where: { key } });
+  }
+}
+
+export const storage: Storage = process.env.STORAGE_BACKEND === "database" ||
+  (process.env.STORAGE_BACKEND !== "local" && (process.env.VERCEL === "1" || (process.env.NODE_ENV === "production" && Boolean(process.env.TURSO_DATABASE_URL))))
+  ? new DatabaseStorage()
+  : new LocalStorage();

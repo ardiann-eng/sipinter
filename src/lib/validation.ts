@@ -101,7 +101,7 @@ export const returnSubmissionSchema = z.object({
     storageKey: optionalText(500),
     originalName: optionalText(255),
     mimeType: z.enum(["application/pdf", "image/jpeg", "image/png"]).optional(),
-    size: z.number().int().positive().max(5 * 1024 * 1024).optional(),
+    size: z.number().int().positive().max(4 * 1024 * 1024).optional(),
   })).max(4, "Maksimal 4 foto"),
 });
 
@@ -127,5 +127,5 @@ export const returnVerificationSchema = z.object({
 
 export const uploadSchema = z.instanceof(File)
   .refine((file) => file.size > 0, "File kosong")
-  .refine((file) => file.size <= 5 * 1024 * 1024, "Ukuran file maksimal 5 MB")
+  .refine((file) => file.size <= 4 * 1024 * 1024, "Ukuran file maksimal 4 MB")
   .refine((file) => ["image/jpeg", "image/png", "application/pdf"].includes(file.type), "Format file tidak didukung");

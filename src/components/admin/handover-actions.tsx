@@ -55,7 +55,7 @@ export function HandoverActions({ requestId, status, borrowerName, borrowerNip }
       <label className="field"><span className="field__label">Penerima kendaraan</span><input className="input" value={borrowerName} disabled /></label>
       <label className="field"><span className="field__label">NIP penerima</span><input className="input" value={borrowerNip} disabled /></label>
       <label className={`field ${s.full}`}><span className="field__label">Catatan kondisi awal</span><textarea className={s.textarea} name="note" maxLength={2000} placeholder="Catat odometer, bahan bakar, kelengkapan, atau informasi serah terima lainnya." /></label>
-      <label className={`field ${s.full}`}><span className="field__label"><Camera size={16} aria-hidden="true" /> Bukti serah terima *</span><input className="input" name="proof" type="file" accept="image/jpeg,image/png,application/pdf" required /><small>Foto atau PDF, maksimal 5 MB.</small></label>
+      <label className={`field ${s.full}`}><span className="field__label"><Camera size={16} aria-hidden="true" /> Bukti serah terima *</span><input className="input" name="proof" type="file" accept="image/jpeg,image/png,application/pdf" required /><small>Foto atau PDF, maksimal 4 MB.</small></label>
     </div>
     <label className={s.check}><input name="confirmed" type="checkbox" required /><span>Kondisi kendaraan, kunci, dan dokumen telah diperiksa bersama penerima.</span></label>
     {error && <p className={s.error} role="alert">{error}</p>}

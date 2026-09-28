@@ -370,3 +370,23 @@ model Setting {
   value     Json
   updatedAt DateTime @updatedAt
 }
+
+model StoredUpload {
+  key          String   @id
+  originalName String
+  mimeType     String
+  size         Int
+  createdAt    DateTime @default(now())
+
+  chunks StoredUploadChunk[]
+}
+
+model StoredUploadChunk {
+  uploadKey String
+  index     Int
+  data      Bytes
+
+  upload StoredUpload @relation(fields: [uploadKey], references: [key], onDelete: Cascade)
+
+  @@id([uploadKey, index])
+}

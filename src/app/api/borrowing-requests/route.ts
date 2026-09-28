@@ -2,7 +2,7 @@ import { BorrowingStatus, ItemCondition, NotificationType, Role, UserStatus } fr
 import { NextRequest, NextResponse } from "next/server";
 import { requireRole } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { storage } from "@/lib/storage";
+import { MAX_REQUEST_UPLOAD_SIZE, storage } from "@/lib/storage";
 import { borrowingRequestSchema } from "@/lib/validation";
 import { transitionBorrowingRequest } from "@/lib/workflow";
 import { apiErrorResponse } from "@/lib/api-response";
@@ -18,7 +18,7 @@ function registrationNumber() {
 }
 
 export async function POST(request: NextRequest) {
-  let storedKeys: string[] = [];
+  const storedKeys: string[] = [];
   let createdRequestId: string | undefined;
   try {
     const user = await requireRole([Role.BORROWER]);
@@ -28,8 +28,13 @@ export async function POST(request: NextRequest) {
     if (!(ktp instanceof File) || !(supporting instanceof File)) {
       return NextResponse.json({ error: "KTP dan dokumen pendukung wajib diunggah." }, { status: 400 });
     }
-    const [ktpStored, supportingStored] = await Promise.all([storage.put(ktp), storage.put(supporting)]);
-    storedKeys = [ktpStored.key, supportingStored.key];
+    if (ktp.size + supporting.size > MAX_REQUEST_UPLOAD_SIZE) {
+      return NextResponse.json({ error: "Total KTP dan dokumen pendukung maksimal 4 MB." }, { status: 400 });
+    }
+    const ktpStored = await storage.put(ktp);
+    storedKeys.push(ktpStored.key);
+    const supportingStored = await storage.put(supporting);
+    storedKeys.push(supportingStored.key);
     const items = JSON.parse(String(form.get("items") ?? "[]")) as unknown;
     const parsed = borrowingRequestSchema.safeParse({
       purpose: form.get("purpose"),

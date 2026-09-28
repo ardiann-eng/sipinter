@@ -2,7 +2,7 @@ import { CompletenessStatus, NotificationType, Role } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import { requireRole } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { storage } from "@/lib/storage";
+import { MAX_REQUEST_UPLOAD_SIZE, storage } from "@/lib/storage";
 import { returnSubmissionSchema } from "@/lib/validation";
 import { submitReturn } from "@/lib/workflow";
 import { apiErrorResponse } from "@/lib/api-response";
@@ -17,8 +17,15 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const { id } = await params;
     const form = await request.formData();
     const files = form.getAll("photos").filter((value): value is File => value instanceof File);
-    const stored = await Promise.all(files.map((file) => storage.put(file)));
-    storedKeys = stored.map((file) => file.key);
+    if (files.reduce((total, file) => total + file.size, 0) > MAX_REQUEST_UPLOAD_SIZE) {
+      return NextResponse.json({ error: "Total foto pengembalian maksimal 4 MB." }, { status: 400 });
+    }
+    const stored = [];
+    for (const file of files) {
+      const saved = await storage.put(file);
+      stored.push(saved);
+      storedKeys.push(saved.key);
+    }
     const parsed = returnSubmissionSchema.safeParse({
       actualReturnDate: form.get("returnedAt"),
       submittedCondition: form.get("condition"),

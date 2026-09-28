@@ -10,7 +10,7 @@ Status MVP: frontend responsif dan alur peminjaman kendaraan sudah terhubung ke 
 - Turso/libSQL dan Prisma ORM dengan driver adapter
 - JWT HS256 melalui `jose`; cookie sesi `httpOnly`, `sameSite=lax`
 - `bcryptjs` untuk hash kata sandi
-- Penyimpanan berkas lokal pada MVP, di balik abstraksi storage
+- Penyimpanan berkas privat di Turso/libSQL pada Vercel, dengan opsi filesystem lokal untuk pengembangan
 
 ## Prasyarat
 
@@ -40,7 +40,8 @@ Prisma Migrate tidak menerapkan migration langsung ke Turso. Tinjau SQL pada `pr
 | `TURSO_AUTH_TOKEN` | Ya | Token Turso rahasia. Jangan pakai token yang pernah dibagikan atau di-commit. |
 | `AUTH_SECRET` | Ya | Secret acak minimal 32 karakter untuk menandatangani JWT HS256. Gunakan nilai berbeda per environment. |
 | `NEXT_PUBLIC_APP_VERSION` | Ya | Versi yang ditampilkan pada halaman login. Nilai ini terekspos ke browser. |
-| `UPLOAD_DIR` | Ya untuk upload lokal | Direktori penyimpanan dokumen MVP. |
+| `UPLOAD_DIR` | Saat storage lokal | Direktori penyimpanan dokumen di server yang memiliki volume persisten. |
+| `STORAGE_BACKEND` | Tidak | `database` untuk Turso atau `local` untuk filesystem; di Vercel otomatis memakai Turso. |
 | `CRON_SECRET` | Ya untuk maintenance terjadwal | Secret Bearer untuk memanggil endpoint maintenance peminjaman. |
 | `DEMO_ADMIN_PASSWORD` | Saat seed | Kata sandi akun demo administrator. |
 | `DEMO_BORROWER_PASSWORD` | Saat seed | Kata sandi akun demo peminjam. |
@@ -102,14 +103,14 @@ Browser
         |-- src/lib/authorization.ts (kebijakan role/SKPD)
         |-- src/lib/workflow.ts (transisi status)
         |-- Prisma Client + libSQL adapter --> Turso
-        |-- src/lib/storage.ts --> filesystem lokal
+        |-- src/lib/storage.ts --> Turso/libSQL di Vercel, filesystem saat lokal
 ```
 
 Route handler auth dipaksa `runtime = "nodejs"` dan `dynamic = "force-dynamic"`. Halaman yang membaca cookie sesi juga dinamis. Ini mencegah koneksi DB pada proses build.
 
 ## Penyimpanan dan Migrasi
 
-MVP menyimpan key dokumen pada Turso/libSQL dan isi berkas di `UPLOAD_DIR`. Direktori harus persisten, tidak dilayani sebagai static directory, dibatasi izin OS, dicadangkan bersama DB, dan dipindai sesuai kebijakan keamanan organisasi.
+Pada Vercel, key dan isi lampiran disimpan di Turso/libSQL dalam potongan 512 KB. Akses baca tetap melalui route terautentikasi. Untuk pengembangan lokal, isi berkas tetap dapat disimpan di `UPLOAD_DIR`. Batas tiap berkas dan total lampiran dalam satu request adalah 4 MB agar sesuai batas payload Vercel.
 
 Migrasi menuju object storage:
 
@@ -138,7 +139,7 @@ Uji manual minimal: login tiap role, redirect role, akses silang role, token rus
 - Pusat notifikasi membaca data per pengguna dari database; CTA menandai notifikasi sebagai terbaca. Pagination dan tandai semua terbaca belum tersedia.
 - Profil memakai klaim sesi; perubahan profil di DB terlihat setelah login ulang.
 - Middleware memvalidasi token, bukan status akun terbaru di DB. Mutasi sensitif harus memakai `requireUser()` atau `requireRole()`.
-- Upload lokal tidak cocok untuk deployment serverless/replica tanpa shared persistent volume.
+- Lampiran di Turso cocok untuk ukuran MVP; bila volume berkas membesar, pindahkan ke object storage privat.
 - Belum ada rate limiting login, MFA, rotasi secret aktif, revocation list, atau integrasi SSO.
 
 ## Langkah Berikutnya

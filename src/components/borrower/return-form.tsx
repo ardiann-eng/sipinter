@@ -43,9 +43,11 @@ export function ReturnForm({ requestId, number, itemCount, borrowDate }: { reque
     files.forEach((file) => {
       if (!allowedPhotoTypes.includes(file.type))
         next.photos = "Foto harus berformat JPG atau PNG.";
-      if (file.size > 5 * 1024 * 1024)
-        next.photos = "Ukuran setiap foto maksimal 5 MB.";
+      if (file.size > 4 * 1024 * 1024)
+        next.photos = "Ukuran setiap foto maksimal 4 MB.";
     });
+    if (files.reduce((total, file) => total + file.size, 0) > 4 * 1024 * 1024)
+      next.photos = "Total foto pengembalian maksimal 4 MB.";
     setErrors(next);
     if (Object.keys(next).length) return;
     try {
@@ -126,7 +128,7 @@ export function ReturnForm({ requestId, number, itemCount, borrowDate }: { reque
               <Camera size={20} />
               <strong>{label}</strong>
               <span className={styles.muted}>
-                Opsional · JPG/PNG · maksimal 5 MB
+                Opsional · JPG/PNG · maksimal 4 MB per foto, 4 MB total
               </span>
               <input
                 id={`photo-${index}`}

@@ -43,7 +43,7 @@ const steps = [
   "Tinjau",
 ];
 const allowedDocumentTypes = ["application/pdf", "image/jpeg", "image/png"];
-const maxFileSize = 5 * 1024 * 1024;
+const maxFileSize = 4 * 1024 * 1024;
 
 function localDateValue(date = new Date()) {
   const offset = date.getTimezoneOffset() * 60_000;
@@ -110,7 +110,7 @@ export function LoanForm({
     if (!file) return `${label} wajib diunggah.`;
     if (!allowedDocumentTypes.includes(file.type))
       return "Format harus PDF, JPG, atau PNG.";
-    if (file.size > maxFileSize) return "Ukuran berkas maksimal 5 MB.";
+    if (file.size > maxFileSize) return "Ukuran berkas maksimal 4 MB.";
     return "";
   }
 
@@ -140,6 +140,8 @@ export function LoanForm({
     if (currentStep === 3) {
       next.ktp = validateFile(ktp, "KTP", revision?.hasKtp);
       next.supporting = validateFile(supporting, "Dokumen pendukung", revision?.hasSupporting);
+      if (ktp && supporting && ktp.size + supporting.size > maxFileSize)
+        next.supporting = "Total KTP dan dokumen pendukung maksimal 4 MB.";
       if (!next.ktp) delete next.ktp;
       if (!next.supporting) delete next.supporting;
     }
@@ -163,6 +165,7 @@ export function LoanForm({
     );
   }
   async function submit() {
+    if (!validate(3)) { setStep(3); return; }
     if (!validate(4)) return;
     if ((!ktp && !revision?.hasKtp) || (!supporting && !revision?.hasSupporting)) return;
 
@@ -192,7 +195,7 @@ export function LoanForm({
         method: "POST",
         body: data,
       });
-      const result = (await response.json()) as { id?: string; error?: string };
+      const result = (await response.json().catch(() => ({ error: response.status === 413 ? "Total berkas melebihi batas unggah 4 MB." : "Server belum dapat memproses pengajuan." }))) as { id?: string; error?: string };
       if (!response.ok || !result.id) {
         throw new Error(result.error ?? "Pengajuan belum dapat dikirim.");
       }
@@ -425,7 +428,7 @@ export function LoanForm({
               <FileField
                 id="ktp"
                 label="KTP peminjam"
-                hint="Wajib · PDF/JPG/PNG · maksimal 5 MB"
+                hint="Wajib · PDF/JPG/PNG · maksimal 4 MB"
                 file={ktp}
                 existing={revision?.hasKtp}
                 error={errors.ktp}
@@ -434,7 +437,7 @@ export function LoanForm({
               <FileField
                 id="supporting"
                 label="Dokumen pendukung / surat tugas"
-                hint="Wajib · PDF/JPG/PNG · maksimal 5 MB"
+                hint="Wajib · PDF/JPG/PNG · maksimal 4 MB"
                 file={supporting}
                 existing={revision?.hasSupporting}
                 error={errors.supporting}

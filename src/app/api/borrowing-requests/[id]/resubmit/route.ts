@@ -4,7 +4,7 @@ import { apiErrorResponse } from "@/lib/api-response";
 import { requireRole } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { getOperationalSettings, validateBorrowingPolicy } from "@/lib/operational-settings";
-import { storage } from "@/lib/storage";
+import { MAX_REQUEST_UPLOAD_SIZE, storage } from "@/lib/storage";
 import { borrowingRequestSchema } from "@/lib/validation";
 import { resubmitBorrowingRequest } from "@/lib/workflow";
 
@@ -24,6 +24,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const form = await request.formData();
     const ktp = form.get("ktp");
     const supporting = form.get("supporting");
+    const newUploadSize = (ktp instanceof File ? ktp.size : 0) + (supporting instanceof File ? supporting.size : 0);
+    if (newUploadSize > MAX_REQUEST_UPLOAD_SIZE) {
+      return NextResponse.json({ error: "Total berkas revisi maksimal 4 MB." }, { status: 400 });
+    }
     const ktpStored = ktp instanceof File && ktp.size ? await storage.put(ktp) : null;
     if (ktpStored) storedKeys.push(ktpStored.key);
     const supportingStored = supporting instanceof File && supporting.size ? await storage.put(supporting) : null;
