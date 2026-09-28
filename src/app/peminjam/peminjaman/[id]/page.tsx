@@ -4,6 +4,7 @@ import { ArrowLeft, FileText } from "lucide-react";
 import { BorrowingStatus, Role } from "@prisma/client";
 import { Badge, DetailGrid, DetailItem, NotFoundState, PageHeader, Panel, Timeline } from "@/components";
 import { StatusBadge } from "@/components/borrower/borrower-ui";
+import { SubmissionSuccess } from "@/components/borrower/submission-success";
 import { ApprovalLetter } from "@/components/approval-letter";
 import styles from "@/components/borrower/borrower.module.css";
 import { requireRole } from "@/lib/auth";
@@ -11,8 +12,8 @@ import { toBorrowerRequest } from "@/lib/borrower-request";
 import { db } from "@/lib/db";
 import { formatDate, formatDateTime } from "@/lib/format";
 
-export default async function BorrowingDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const [user, { id }] = await Promise.all([requireRole([Role.BORROWER]), params]);
+export default async function BorrowingDetailPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ sent?: string }> }) {
+  const [user, { id }, query] = await Promise.all([requireRole([Role.BORROWER]), params, searchParams]);
   const record = await db.borrowingRequest.findFirst({
     where: { id, borrowerId: user.id },
     include: {
@@ -46,10 +47,11 @@ export default async function BorrowingDetailPage({ params }: { params: Promise<
 
   return <div className={styles.page}>
     <PageHeader eyebrow="Detail peminjaman" title={record.registrationNumber} description={`Diajukan ${formatDateTime(record.submittedAt ?? record.createdAt)} WITA`} actions={<Link className={`${styles.linkButton} ${styles.linkOutline}`} href="/peminjam/peminjaman"><ArrowLeft size={16} aria-hidden="true" /> Kembali</Link>} />
+    {record.status === BorrowingStatus.WAITING_ADMIN_VERIFICATION && (query.sent === "new" || query.sent === "revision") && <SubmissionSuccess mode={query.sent} registrationNumber={record.registrationNumber} />}
     <section className={styles.statusHero} aria-label="Status dan tindakan peminjaman"><div><span>STATUS SAAT INI</span><h2>{nextAction.title}</h2><p>{nextAction.description}</p></div><div className={styles.statusHeroAction}><StatusBadge status={request.status} />{"href" in nextAction && nextAction.href && <Link className={`${styles.linkButton} ${styles.linkSecondary}`} href={nextAction.href}>{nextAction.label}</Link>}</div></section>
     <div className={styles.grid}>
       <Panel className={styles.span8}><div className={styles.detailHero}><div><h2>{record.purpose}</h2><p className={styles.muted}>{record.activityLocation}</p></div><StatusBadge status={request.status} /></div><DetailGrid><DetailItem label="Peminjam">{record.borrower.name}</DetailItem><DetailItem label="NIP">{record.borrower.nip}</DetailItem><DetailItem label="Perangkat daerah">{record.borrower.skpd.name}</DetailItem><DetailItem label="Unit kerja">{record.borrower.position}</DetailItem><DetailItem label="Mulai">{formatDate(record.borrowDate)}</DetailItem><DetailItem label="Selesai">{formatDate(record.plannedReturnDate)}</DetailItem><DetailItem label="Keperluan" wide>{record.purpose}</DetailItem><DetailItem label="Lokasi kegiatan" wide>{record.activityLocation}</DetailItem></DetailGrid></Panel>
-      <Panel className={styles.span4} title="Alur peminjaman"><Timeline items={timeline} /></Panel>
+      <Panel id="alur-peminjaman" className={styles.span4} title="Alur peminjaman"><Timeline items={timeline} /></Panel>
       <Panel className={styles.span8} title="Kendaraan dipinjam" description={`${record.items.length} kendaraan`}><div className={styles.itemRows}>{record.items.map((entry) => <div className={styles.itemRow} key={entry.id}>{entry.item.mainPhoto && <span className={styles.itemRowImage}><Image src={entry.item.mainPhoto} alt="" fill sizes="72px" /></span>}<div><strong>{entry.item.name}</strong><small>{entry.item.registrationNumber ?? entry.item.itemCode}</small></div><Badge tone="info">{entry.quantity} kendaraan</Badge></div>)}</div></Panel>
       <Panel className={styles.span4} title="Dokumen pengajuan"><div className={styles.available}><ApprovalLetter requestId={record.id} signed={Boolean(record.approvedAt)} />{record.ktpFile && <a className={styles.availableItem} href={`/api/uploads/${encodeURIComponent(record.ktpFile)}`} target="_blank" rel="noreferrer"><span className={styles.itemIcon}><FileText size={18} aria-hidden="true" /></span><div><strong>Kartu Tanda Penduduk</strong><small>Buka dokumen</small></div></a>}{record.approvalLetterFile && <a className={styles.availableItem} href={`/api/uploads/${encodeURIComponent(record.approvalLetterFile)}`} target="_blank" rel="noreferrer"><span className={styles.itemIcon}><FileText size={18} aria-hidden="true" /></span><div><strong>Surat tugas</strong><small>Buka dokumen</small></div></a>}</div></Panel>
     </div>

@@ -201,7 +201,7 @@ export function LoanForm({
       }
 
       window.localStorage.removeItem("sipinter-borrower-draft");
-      router.push(revision ? `/peminjam/peminjaman/${revision.id}` : "/peminjam/peminjaman");
+      router.push(`/peminjam/peminjaman/${result.id}?sent=${revision ? "revision" : "new"}`);
       router.refresh();
     } catch (cause) {
       setSubmitError(
