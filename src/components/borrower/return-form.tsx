@@ -57,7 +57,9 @@ export function ReturnForm({ requestId, number, itemCount, borrowDate }: { reque
       data.set("note", note);
       files.forEach((file) => data.append("photos", file));
       const response = await fetch(`/api/borrowing-requests/${requestId}/return`, { method: "POST", body: data });
-      const result = await response.json() as { error?: string };
+      const result = (await response.json().catch(() => ({ error: response.status === 413
+        ? "Total foto melebihi batas unggah 4 MB."
+        : "Server belum dapat memproses pengembalian." }))) as { error?: string };
       if (!response.ok) throw new Error(result.error ?? "Pengembalian belum dapat diproses.");
       setSent(true);
     } catch (error) {

@@ -21,7 +21,9 @@ export function HandoverActions({ requestId, status, borrowerName, borrowerNip }
     setError("");
     try {
       const response = await fetch(`/api/borrowing-requests/${requestId}/handover`, { method: "POST", body: data });
-      const payload = (await response.json()) as { error?: string };
+      const payload = (await response.json().catch(() => ({ error: response.status === 413
+        ? "Bukti serah terima melebihi batas unggah 4 MB."
+        : "Server belum dapat memproses penyerahan." }))) as { error?: string };
       if (!response.ok) throw new Error(payload.error ?? "Penyerahan belum dapat diproses.");
       router.refresh();
     } catch (cause) {
@@ -46,6 +48,11 @@ export function HandoverActions({ requestId, status, borrowerName, borrowerNip }
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
+    const proof = data.get("proof");
+    if (proof instanceof File && proof.size > 4 * 1024 * 1024) {
+      setError("Bukti serah terima maksimal 4 MB.");
+      return;
+    }
     data.set("stage", "HANDOVER");
     await send(data);
   }

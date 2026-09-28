@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { apiErrorResponse } from "@/lib/api-response";
 import { requireRole } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { storage } from "@/lib/storage";
+import { MAX_REQUEST_UPLOAD_SIZE, storage } from "@/lib/storage";
 import { transitionBorrowingRequest } from "@/lib/workflow";
 
 export const runtime = "nodejs";
@@ -70,6 +70,9 @@ export async function POST(
         { error: "Foto atau dokumen bukti serah terima wajib diunggah." },
         { status: 400 },
       );
+    }
+    if (proof.size > MAX_REQUEST_UPLOAD_SIZE) {
+      return NextResponse.json({ error: "Bukti serah terima maksimal 4 MB." }, { status: 400 });
     }
     const stored = await storage.put(proof);
     proofKey = stored.key;
