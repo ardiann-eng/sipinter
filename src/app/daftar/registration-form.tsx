@@ -136,7 +136,7 @@ export function RegistrationForm({
               <Image src={anniversaryLogo} alt="Logo 418 Tahun Kota Makassar" />
             </span>
           </span>
-          <strong>SIPINTER</strong>
+          <strong>SIPINTAR</strong>
         </div>
         <div className={styles.asideBody}>
           <p className={styles.eyebrow}>AKSES PEMINJAM</p>
@@ -296,7 +296,7 @@ export function RegistrationForm({
               <label className={styles.consent}>
                 <input name="consent" type="checkbox" required />
                 <span>
-                  Saya menyetujui penggunaan data untuk pembuatan akun SIPINTER.
+                  Saya menyetujui penggunaan data untuk pembuatan akun SIPINTAR.
                 </span>
               </label>
             </div>

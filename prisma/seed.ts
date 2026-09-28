@@ -22,7 +22,7 @@ const demoAccounts = [
     env: "DEMO_ADMIN_PASSWORD",
     emailEnv: "DEMO_ADMIN_EMAIL",
     nip: "198001012005011001",
-    name: "Administrator SIPINTER",
+    name: "Administrator SIPINTAR",
     position: "Administrator",
     role: Role.ADMIN,
   },
@@ -431,7 +431,7 @@ async function main() {
   // Seed hanya menyiapkan akun dan inventaris. Riwayat serta notifikasi berasal dari transaksi nyata.
 
   console.info(
-    "Seed SIPINTER selesai: SKPD, akun akses, dan inventaris dibuat.",
+    "Seed SIPINTAR selesai: SKPD, akun akses, dan inventaris dibuat.",
   );
 }
 

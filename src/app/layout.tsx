@@ -18,11 +18,11 @@ const sourceSerif = Source_Serif_4({
 
 export const metadata: Metadata = {
   title: {
-    default: "SIPINTER",
-    template: "%s | SIPINTER",
+    default: "SIPINTAR",
+    template: "%s | SIPINTAR",
   },
   description:
-    "Sistem Informasi Peminjaman Kendaraan Dinas Pemerintah Kota Makassar",
+    "Sistem Informasi Peminjaman Inventaris Kantor Terintegrasi Pemerintah Kota Makassar",
   icons: {
     icon: [{ url: cityLogo.src, type: "image/png" }],
   },

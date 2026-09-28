@@ -85,12 +85,12 @@ function LoginContent() {
         </div>
         <div className={styles.identityBody}>
           <p className={styles.kicker}>LAYANAN INTERNAL PEMERINTAHAN</p>
-          <h1 id="brand-title">SIPINTER</h1>
+          <h1 id="brand-title">SIPINTAR</h1>
           <p className={styles.fullName}>
-            Sistem Informasi Peminjaman Kendaraan Dinas
+            Sistem Informasi Peminjaman Inventaris Kantor Terintegrasi
           </p>
           <p className={styles.statement}>
-            Peminjaman kendaraan dinas yang tertib, transparan, dan dapat
+            Peminjaman inventaris kantor yang tertib, transparan, dan dapat
             ditelusuri.
           </p>
         </div>
@@ -104,13 +104,13 @@ function LoginContent() {
           <div className={styles.mobileBrand}>
             <LogoGroup className={styles.mobileLogo} />
             <div>
-              <strong>SIPINTER</strong>
-              <span>Pemerintah Kota Makassar</span>
+              <strong>SIPINTAR</strong>
+              <span>Sistem Informasi Peminjaman Inventaris Kantor Terintegrasi</span>
             </div>
           </div>
           <div className={styles.heading}>
             <h2>
-              Masuk ke <strong>SIPINTER</strong>
+              Masuk ke <strong>SIPINTAR</strong>
             </h2>
           </div>
           <p className={styles.intro}>
@@ -167,7 +167,7 @@ function LoginContent() {
                 <input name="remember" type="checkbox" />
                 <span>Ingat saya di perangkat ini</span>
               </label>
-              <a href="mailto:helpdesk@makassarkota.go.id?subject=Reset%20kata%20sandi%20SIPINTER">
+              <a href="mailto:helpdesk@makassarkota.go.id?subject=Reset%20kata%20sandi%20SIPINTAR">
                 Lupa kata sandi?
               </a>
             </div>
@@ -195,7 +195,7 @@ function LoginContent() {
             <div>
               <strong>Belum memiliki akun?</strong>
               <span>
-                Daftar sebagai peminjam untuk langsung menggunakan SIPINTER.
+                Daftar sebagai peminjam untuk langsung menggunakan SIPINTAR.
               </span>
             </div>
             <Link href="/daftar">Daftar</Link>

@@ -60,12 +60,16 @@ export async function createApprovalLetter(request: ApprovalLetterRequest): Prom
     .sort((a, b) => b.decidedAt.getTime() - a.decidedAt.getTime())[0];
   const signed = hasSekdaApproval(request);
   const template = await readFile(templatePath);
-  const doc = new Docxtemplater(new PizZip(template), { paragraphLoop: true, linebreaks: true, nullGetter: () => "" });
+  const templateZip = new PizZip(template);
+  const templateXml = templateZip.file("word/document.xml")?.asText();
+  if (!templateXml) throw new Error("Template surat tidak lengkap");
+  templateZip.file("word/document.xml", templateXml.replaceAll("SIPINTER", "SIPINTAR"));
+  const doc = new Docxtemplater(templateZip, { paragraphLoop: true, linebreaks: true, nullGetter: () => "" });
   doc.render({
     letterTitle: signed ? "SURAT PERSETUJUAN PEMINJAMAN BARANG INVENTARIS" : "DRAF SURAT PERSETUJUAN PEMINJAMAN BARANG INVENTARIS",
     registrationNumber: request.registrationNumber,
     decisionIntro: signed
-      ? "Dengan ini menyatakan MENYETUJUI permohonan peminjaman barang inventaris kantor yang diajukan melalui aplikasi SIPINTER oleh:"
+      ? "Dengan ini menyatakan MENYETUJUI permohonan peminjaman barang inventaris kantor yang diajukan melalui aplikasi SIPINTAR oleh:"
       : "Berikut adalah data permohonan peminjaman barang inventaris yang menunggu persetujuan Sekda:",
     borrowerName: request.borrower.name,
     borrowerNip: request.borrower.nip,
@@ -77,7 +81,7 @@ export async function createApprovalLetter(request: ApprovalLetterRequest): Prom
     purpose: request.purpose,
     activityLocation: request.activityLocation,
     validityText: signed
-      ? "Surat persetujuan ini diterbitkan melalui aplikasi SIPINTER setelah keputusan Sekda dicatat."
+      ? "Surat persetujuan ini diterbitkan melalui aplikasi SIPINTAR setelah keputusan Sekda dicatat."
       : "DRAF — surat ini belum disetujui dan belum berlaku sebagai surat persetujuan.",
     decisionDate: signed && approval ? indonesianDate(approval.decidedAt) : "Menunggu persetujuan",
     decisionHeading: signed ? "Menyetujui," : "Menunggu persetujuan,",

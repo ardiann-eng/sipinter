@@ -37,7 +37,7 @@ export default async function ProfilePage() {
           <div>
             <p className={styles.eyebrow}>AKUN PENGGUNA</p>
             <h1>Profil</h1>
-            <p>Identitas kedinasan dan akses aktif SIPINTER.</p>
+            <p>Identitas kedinasan dan akses aktif SIPINTAR.</p>
           </div>
           <Link className={styles.back} href={roleHome[user.role]}>
             <ArrowLeft size={16} /> Kembali ke beranda
@@ -106,7 +106,7 @@ export default async function ProfilePage() {
                 <p>SESI & KEAMANAN</p>
                 <h2>Akhiri sesi perangkat ini</h2>
                 <span>
-                  Gunakan saat selesai memakai SIPINTER pada perangkat bersama.
+                  Gunakan saat selesai memakai SIPINTAR pada perangkat bersama.
                 </span>
               </div>
               <LogoutButton />

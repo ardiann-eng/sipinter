@@ -81,7 +81,7 @@ export function InventoryExportButton({ items }: { items: InventoryItem[] }) {
     const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
     const anchor = document.createElement("a");
     anchor.href = url;
-    anchor.download = `inventaris-sipinter-${new Date().toISOString().slice(0, 10)}.csv`;
+    anchor.download = `inventaris-sipintar-${new Date().toISOString().slice(0, 10)}.csv`;
     anchor.click();
     URL.revokeObjectURL(url);
   }

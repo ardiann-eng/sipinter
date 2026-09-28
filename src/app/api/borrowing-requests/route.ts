@@ -14,7 +14,7 @@ export const dynamic = "force-dynamic";
 function registrationNumber() {
   const now = new Date();
   const month = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"][now.getUTCMonth()];
-  return `SIPINTER/PMK/${month}/${now.getUTCFullYear()}/${Date.now().toString().slice(-6)}`;
+  return `SIPINTAR/PMK/${month}/${now.getUTCFullYear()}/${Date.now().toString().slice(-6)}`;
 }
 
 export async function POST(request: NextRequest) {

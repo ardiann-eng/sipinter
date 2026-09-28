@@ -41,7 +41,7 @@ import s from "./admin.module.css";
 export { s };
 
 export function AdminHeader(props: React.ComponentProps<typeof PageHeader>) {
-  return <PageHeader eyebrow="Administrasi SIPINTER" {...props} />;
+  return <PageHeader eyebrow="Administrasi SIPINTAR" {...props} />;
 }
 
 export function LinkButton({

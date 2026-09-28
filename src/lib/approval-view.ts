@@ -32,7 +32,7 @@ export function toApprovalView(request: ApprovalRequest) {
       quantity: entry.quantity,
       unit: entry.item.unit,
     })),
-    admin: "Administrator SIPINTER",
+    admin: "Administrator SIPINTAR",
     adminNote: request.adminNote ?? "Tidak ada catatan verifikasi administrator.",
     status,
     decidedAt: decision ? formatDateTime(decision.decidedAt) : undefined,

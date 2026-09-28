@@ -30,6 +30,8 @@ describe("surat persetujuan", () => {
     expect(document).toContain("Proyektor");
     expect(document).toContain("Laptop");
     expect(document).toContain("belum disetujui");
+    expect(document).toContain("(SIPINTAR):");
+    expect(document).toContain("SIPINTER-TEST-001");
     expect(zip.file("word/media/sekda-signature.png")).toBeNull();
   });
 
@@ -45,6 +47,8 @@ describe("surat persetujuan", () => {
     expect(document).toContain("198006301998101002");
     expect(document).toContain("rIdSekdaSignature");
     expect(document).not.toContain("__SEKDA_SIGNATURE__");
+    expect(document).toContain("(SIPINTAR):");
+    expect(document).toContain("SIPINTER-TEST-001");
     expect(zip.file("word/media/sekda-signature.png")).not.toBeNull();
   });
 });
